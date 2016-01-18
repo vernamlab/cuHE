@@ -71,5 +71,5 @@ CNS Award #1117590 and #1319130.
 [10]: http://en.wikipedia.org/wiki/Chinese_remainder_theorem/ "CRT"
 [11]: http://en.wikipedia.org/wiki/Discrete_Fourier_transform_(general)/ "NTT"
 [12]: http://en.wikipedia.org/wiki/Barrett_reduction/ "Barrett"
-[13]: http://github.com/Veirday "WeiDaiGitHub"
-[14]: http://ecewp.ece.wpi.edu/wordpress/vernam/ "VernamGroup"
+[13]: http://github.com/Veirday/ "WeiDaiGitHub"
+[14]: http://vernam.wpi.edu/ "VernamGroup"
