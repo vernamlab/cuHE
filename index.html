@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Cuhe by vernamlab</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Cuhe</h1>
+        <p>CUDA Homomorphic Encryption Library</p>
+        <p class="view"><a href="https://github.com/vernamlab/cuHE">View the Project on GitHub <small>vernamlab/cuHE</small></a></p>
+        <ul>
+          <li><a href="https://github.com/vernamlab/cuHE/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/vernamlab/cuHE/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/vernamlab/cuHE">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="cuhe-homomorphic-and-fast" class="anchor" href="#cuhe-homomorphic-and-fast" aria-hidden="true"><span class="octicon octicon-link"></span></a>cuHE: Homomorphic and fast</h1>
+
+<p>CUDA Homomorphic Encryption Library (cuHE) is a GPU-accelerated library for <a href="http://en.wikipedia.org/wiki/Homomorphic_encryption/" title="HE">homomorphic encryption</a> (HE) schemes and homomorphic algorithms defined over polynomial rings. cuHE yields an astonishing performance while providing a simple interface that greatly enhances programmer <strong>productivity</strong>. It features both algebraic techniques for homomorphic evalution of circuits and highly optimized code for single-GPU or multi-GPU machines. Develop <strong>high-performance</strong> applications rapidly with cuHE!</p>
+
+<p>The library is currently created for research purpose only. Several algorithms are implemented as examples and more will follow. Feedback and collaboration of any kind are welcomed.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<p>The library pushes performance to a limit. A number of optimizations such as algebraic techniques for efficient evaluation, memory minimization techniques, memory and stream scheduling and low level CUDA hand-tuned assembly optimizations are included to take full advantage of the mass parallelism and high memory bandwidth GPUs offer. The arithmetic functions constructed to handle very large polynomial operands adopt the Chinese remainder theorem (CRT), the number-theoretic transform (NTT) and Barrett reduction based methods. A few algorithms and routines of the library is described in <a href="http://eprint.iacr.org/2015/818/" title="cuHEPDF">this paper</a>, along with a performance analysis. More details on arithmetic methods and optimizations regarding HE are explained in our previous papers listed below.</p>
+
+<ol>
+<li><p>Dai, Wei, and Berk Sunar. "cuHE: A Homomorphic Encryption Accelerator Library." Cryptography and Information Security in the Balkans. Springer International Publishing, 2015. 169-186. (<a href="http://eprint.iacr.org/2015/818/" title="cuHEPDF">pdf</a>)</p></li>
+<li><p>Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating NTRU based homomorphic encryption using GPUs." High Performance Extreme Computing Conference (HPEC), 2014 IEEE. IEEE, 2014. (<a href="http://eprint.iacr.org/2014/389/" title="Dai2014PDF">pdf</a>)</p></li>
+<li><p>Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating SWHE Based PIRs Using GPUs." Financial Cryptography and Data Security: FC 2015 International Workshops, BITCOIN, WAHC, and Wearable, San Juan, Puerto Rico, January 30, 2015, Revised Selected Papers. Vol. 8976. Springer, 2015. (<a href="http://eprint.iacr.org/2015/462/" title="Dai2015aPDF">pdf</a>)</p></li>
+</ol>
+
+<h2>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Examples</h2>
+
+<p>Currently available is an implementation of the <a href="http://eprint.iacr.org/2014/233/" title="DHS14">Doröz-Hu-Sunar</a> (DHS) somewhat homomorphic encryption (SHE) scheme based on the <a href="http://eprint.iacr.org/2013/094/" title="LTV13">Lopez-Tromer-Vaikuntanathan</a> (LTV) scheme.
+Several homomorphic applications built on DHS are implemented on GPUs and are included as examples, such as the Prince block cipher and a sorting algorithm.
+These examples give an idea of how to program with the cuHE library.</p>
+
+<h2>
+<a id="system-requirements" class="anchor" href="#system-requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>System Requirements</h2>
+
+<ol>
+<li>NVIDIA <a href="http://developer.nvidia.com/cuda-gpus/" title="CUDAGPUs">CUDA-Enabled GPUs</a> with computation compability 3.0 or higher</li>
+<li>
+<a href="http://www.shoup.net/ntl/" title="NTL">NTL</a>: A Library for doing Number Theory 9.3.0 (requires C++11)</li>
+<li>The <a href="http://openmp.org/wp/" title="OpenMP">OpenMP</a> API</li>
+</ol>
+
+<h2>
+<a id="a-short-tutorial" class="anchor" href="#a-short-tutorial" aria-hidden="true"><span class="octicon octicon-link"></span></a>A Short Tutorial</h2>
+
+<p>To design/implement a homomorphic application/circuit, e.x. the AND of 8 bits. First of all, we need to decide which homomorphic encryption scheme to adopt and set parameters (polynomial ring degree, coefficient sizes in each level of circuit, relinearization strategy) according to some noise analysis process. Let's say we decide to adopt the DHS HE scheme.</p>
+
+<div class="highlight highlight-source-c++"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">"</span>cuHE.h<span class="pl-pds">"</span></span>
+<span class="pl-k">void</span> <span class="pl-en">setParameters</span>(<span class="pl-k">int</span> d, <span class="pl-k">int</span> p, <span class="pl-k">int</span> w, <span class="pl-k">int</span> min, <span class="pl-k">int</span> cut, <span class="pl-k">int</span> m);<span class="pl-c">//in "CuHE.h", set parameters</span>
+<span class="pl-k">void</span> <span class="pl-en">initCuHE</span>(ZZ *coeffMod_, ZZX modulus); <span class="pl-c">//in "CuHE.h", start pre-computation on GPUs</span></pre></div>
+
+<p>Then we may process some pre-computation of the circuit. When it is time to run the circuit, we suggest to turn on our virtual allocator. Do not turn if off until the circuit is completely done.</p>
+
+<div class="highlight highlight-source-c++"><pre><span class="pl-k">void</span> <span class="pl-en">startAllocator</span>(); <span class="pl-c">//in "CuHE.h", start virtual allocator</span>
+<span class="pl-k">void</span> <span class="pl-en">stopAllocator</span>(); <span class="pl-c">//in "CuHE.h", stop virtual allocator</span></pre></div>
+
+<p>The program by default uses a single GPU (device ID 0). To adopt multiple devices, call the function below.</p>
+
+<div class="highlight highlight-source-c++"><pre><span class="pl-k">void</span> <span class="pl-en">multiGPUs</span>(<span class="pl-k">int</span> num); <span class="pl-c">//adopt 'num' GPUs</span></pre></div>
+
+<p>Those are all the initialization steps. To implement any HE scheme or circuit, please check out the provided examples.</p>
+
+<h2>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributors</h2>
+
+<p>The cuHE library is developed and maintained by <a href="http://github.com/Veirday" title="WeiDaiGitHub">Wei Dai</a> from the <a href="http://ecewp.ece.wpi.edu/wordpress/vernam/" title="VernamGroup">Vernam Group</a> at Worcester Polytechnic Institute.</p>
+
+<h2>
+<a id="acknowledgment" class="anchor" href="#acknowledgment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
+
+<p>The cuHE library is distributed under the terms of the The MIT License (MIT).</p>
+
+<p>Funding for this research was in part provided by the US National Science Foundation
+CNS Award #1117590 and #1319130.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/vernamlab">vernamlab</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
