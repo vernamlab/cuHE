@@ -35,8 +35,6 @@
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_pXFactoring.h>
 NTL_CLIENT
-#include "../../cuhe/CuHE.h"
-using namespace cuHE;
 
 ///////////////////////////////////////////////////////////////////////////////
 /** @class Batcher */

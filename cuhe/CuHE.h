@@ -29,13 +29,12 @@
 
 #pragma once
 
-#include "Relinearization.h"
-#include "Parameters.h"
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <NTL/ZZ.h>
 #include <NTL/ZZX.h>
 NTL_CLIENT
+#include "Parameters.h"
 
 typedef unsigned char		uint8;	// 8-bit
 typedef	unsigned int		uint32;	// 32-bit
@@ -53,13 +52,6 @@ public:
 	CuPolynomial();
 	~CuPolynomial();
 	void reset();
-	
-	//-- Set Methods -------------------------------------------
-	void set(int logq, int dom, int dev, cudaStream_t st = 0);
-	// initialize witout value
-
-	void set(int logq, int dev, ZZX val);
-	// initialize with ZZX domain value
 
 	void logq(int val); // logq_ = val
 	void domain(int val); // domain_ = val
@@ -71,14 +63,14 @@ public:
 	void nRep(uint64* val); // nRep_ = val (pointer copy)
 
 	//-- Get Methods -------------------------------------------
-	int		logq(void);
-	int		domain(void);
-	int		device(void);
-	bool	isProd(void);
-	ZZX		zRep(void);
-	uint32* rRep(void);
-	uint32* cRep(void);
-	uint64* nRep(void);
+	int		logq();
+	int		domain();
+	int		device();
+	bool	isProd();
+	ZZX		zRep();
+	uint32* rRep();
+	uint32* cRep();
+	uint64* nRep();
 
 	//-- Domain Conversions ------------------------------------
 	void x2z(cudaStream_t st = 0); // any -> ZZX
@@ -129,6 +121,14 @@ class CuCtxt: public CuPolynomial {
 // It includes knowledge of circuits or levels.
 // Temporarily it needs more than enough memory size.
 public:
+	CuCtxt():CuPolynomial(){ level_ = -1;};
+	//-- Set Methods -------------------------------------------
+	void setLevel(int lvl, int dom, int dev, cudaStream_t st = 0);
+	// initialize witout value
+
+	void setLevel(int lvl, int dev, ZZX val);
+	// initialize with ZZX domain value
+
 	//-- Get Methods -------------------------------------------
 	int level();
 	//-- Noise Control -----------------------------------------
@@ -143,8 +143,9 @@ public:
 
 	size_t cRepSize();
 	size_t nRepSize();
-	///void relin(cudaStream_t st = 0);
-	// relinearization (not yet ready)
+
+protected:
+	int level_;
 }; // end CuCtxt
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -154,6 +155,13 @@ class CuPtxt: public CuPolynomial {
 // Use this class when a plaintext has batched format, i.e. a polynomial.
 // Otherwise a plaintext is an integer.
 public:
+	//-- Set Methods -------------------------------------------
+	void setLogq(int logq, int dom, int dev, cudaStream_t st = 0);
+	// initialize witout value
+
+	void setLogq(int logq, int dev, ZZX val);
+	// initialize with ZZX domain value
+
 	size_t cRepSize();
 	size_t nRepSize();
 }; // end CuPtxt
@@ -191,6 +199,11 @@ void setParameters(int d, int p, int w, int min, int cut, int m);
 void resetParameters();
 // Reset parameters to zeros
 //	and delete global parameter.
+
+void initRelinearization(ZZX* evalkey);
+// convert evalkey to ntt domain
+// store ntt(evalkey) in CPU memory efficiently
+// maybe GPU memory
 
 ///////////////////////////////////////////////////////////////////////////////
 //// NTL Interface ////////////////////////////////////////////////////////////

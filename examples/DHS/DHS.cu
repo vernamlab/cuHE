@@ -22,6 +22,8 @@
  */
 
 #include "DHS.h"
+#include "../../cuhe/CuHE.h"
+using namespace cuHE;
 
 ///////////////////////////////////////////////////////////////////////////////
 // @class CuDHS
@@ -207,7 +209,7 @@ void CuDHS::genEk() {
 		tw *= w;
 	}
 
-	initRelin(ek_);
+	initRelinearization(ek_);
 }
 void CuDHS::coeffReduce(ZZX& out, ZZX in, int lvl) {
 	coeffReduce(out, in, coeffMod_[lvl]);

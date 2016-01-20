@@ -50,7 +50,7 @@ void initRelin(ZZX* evalkey) {
 
 	for (int i=0; i<param.numEvalKey; i++) {
 		CuCtxt ek;
-		ek.set(param._logCoeff(0), 0, evalkey[i]);
+		ek.setLevel(0, 0, evalkey[i]);
 		ek.x2n();
 		for (int j=0; j<param.numCrtPrime; j++)
 			CSC(cudaMemcpy(h_ek[j]+i*param.nttLen, ek.nRep()+j*param.nttLen,

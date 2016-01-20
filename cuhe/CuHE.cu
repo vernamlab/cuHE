@@ -25,7 +25,7 @@
 #include "Debug.h"
 #include "Operations.h"
 #include "DeviceManager.h"
-//#include "Parameters.h"
+#include "Relinearization.h"
 
 namespace cuHE {
 
@@ -72,12 +72,16 @@ void resetParameters() {
 	resetParam();
 }
 
+void initRelinearization(ZZX* evalkey) {
+	initRelin(evalkey);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //// Operations: CuCtxt & CuPtxt //////////////////////////////////////////////
 void copy(CuCtxt& dst, CuCtxt src, cudaStream_t st) {
 	if (&dst != &src) {
 		dst.reset();
-		dst.set(src.logq(), src.domain(), src.device(), st);
+		dst.setLevel(src.level(), src.domain(), src.device(), st);
 		dst.isProd(src.isProd());
 		CSC(cudaSetDevice(dst.device()));
 		if (dst.domain() == 0)
@@ -109,7 +113,7 @@ void cAnd(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
 	}
 	if (&out != &in0) {
 		out.reset();
-		out.set(in0.logq(), 3, in0.device(), st);
+		out.setLevel(in0.level(), 3, in0.device(), st);
 	}
 	CSC(cudaSetDevice(out.device()));
 	nttMul(out.nRep(), in0.nRep(), in1.nRep(), out.logq(), out.device(), st);
@@ -127,7 +131,7 @@ void cAnd(CuCtxt& out, CuCtxt& inc, CuPtxt& inp, cudaStream_t st) {
 	}
 	if (&out != &inc) {
 		out.reset();
-		out.set(inc.logq(), 3, inc.device(), st);
+		out.setLevel(inc.level(), 3, inc.device(), st);
 	}
 	CSC(cudaSetDevice(out.device()));
 	nttMulNX1(out.nRep(), inc.nRep(), inp.nRep(), out.logq(), out.device(), st);
@@ -146,7 +150,7 @@ void cXor(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
 	if (in0.domain() == 2 && in1.domain() == 2) {
 		if (&out != &in0) {
 			out.reset();
-			out.set(in0.logq(), 2, in0.device(), st);
+			out.setLevel(in0.level(), 2, in0.device(), st);
 		}
 		CSC(cudaSetDevice(out.device()));
 		crtAdd(out.cRep(), out.cRep(), in1.cRep(), out.logq(), out.device(), st);
@@ -155,7 +159,7 @@ void cXor(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
 	else if (in0.domain() == 3 && in1.domain() == 3) {
 		if (&out != &in0) {
 			out.reset();
-			out.set(in0.logq(), 3, in0.device(), st);
+			out.setLevel(in0.level(), 3, in0.device(), st);
 			out.isProd(in0.isProd()||in1.isProd());
 		}
 		CSC(cudaSetDevice(out.device()));
@@ -175,7 +179,7 @@ void cXor(CuCtxt& out, CuCtxt& in0, CuPtxt& in1, cudaStream_t st) {
 	if (in0.domain() == 2 && in1.domain() == 2) {
 		if (&out != &in0) {
 			out.reset();
-			out.set(in0.logq(), 2, in0.device(), st);
+			out.setLevel(in0.level(), 2, in0.device(), st);
 		}
 		CSC(cudaSetDevice(out.device()));
 		crtAddNX1(out.cRep(), out.cRep(), in1.cRep(), out.logq(), out.device(), st);
@@ -184,7 +188,7 @@ void cXor(CuCtxt& out, CuCtxt& in0, CuPtxt& in1, cudaStream_t st) {
 	else if (in0.domain() == 3 && in1.domain() == 3) {
 		if (&out != &in0) {
 			out.reset();
-			out.set(in0.logq(), 3, in0.device(), st);
+			out.setLevel(in0.level(), 3, in0.device(), st);
 			out.isProd(in0.isProd()||in1.isProd());
 		}
 		CSC(cudaSetDevice(out.device()));
@@ -203,7 +207,7 @@ void cNot(CuCtxt& out, CuCtxt& in, cudaStream_t st) {
 	}
 	if (&out != &in) {
 		out.reset();
-		out.set(in.logq(), in.domain(), in.device(), st);
+		out.setLevel(in.level(), in.domain(), in.device(), st);
 	}
 	CSC(cudaSetDevice(out.device()));
 	crtAddInt(out.cRep(), in.cRep(), (unsigned)param.modMsg-1, out.logq(), out.device(), st);
@@ -250,8 +254,8 @@ void copyTo(CuCtxt& dst, CuCtxt& src, int dstDev, cudaStream_t st) {
 //// NTL Interface ////////////////////////////////////////////////////////////
 void mulZZX(ZZX& out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
 	CuCtxt cin0, cin1;
-	cin0.set(param._logCoeff(lvl), dev, in0);
-	cin1.set(param._logCoeff(lvl), dev, in1);
+	cin0.setLevel(lvl, dev, in0);
+	cin1.setLevel(lvl, dev, in1);
 	cin0.x2n(st);
 	cin1.x2n(st);
 	cAnd(cin0, cin0, cin1, st);
@@ -290,25 +294,6 @@ void CuPolynomial::reset() {
 	device_ = -1;
 }
 //-- Set Methods -------------------------------------------
-void CuPolynomial::set(int logq, int domain, int device, cudaStream_t st) {
-	logq_ = logq;
-	domain_ = domain;
-	device_ = device;
-	if (domain_ == 0)
-		clear (zRep_);
-	else if (domain_ == 1)
-		rRepCreate(st);
-	else if (domain_ == 2)
-		cRepCreate(st);
-	else if (domain_ == 3)
-		nRepCreate(st);
-}
-void CuPolynomial::set(int logq, int device, ZZX val) {
-	logq_ = logq;
-	domain_ = 0;
-	device_ = device;
-	zRep_ = val;
-}
 void CuPolynomial::logq(int val) { logq_ = val;}
 void CuPolynomial::domain(int val) { domain_ = val;}
 void CuPolynomial::device(int val) { device_ = val;}
@@ -318,14 +303,14 @@ void CuPolynomial::rRep(uint32* val) { rRep_ = val;}
 void CuPolynomial::cRep(uint32* val) { cRep_ = val;}
 void CuPolynomial::nRep(uint64* val) { nRep_ = val;}
 //-- Get Methods -------------------------------------------
-int CuPolynomial::logq(void) { return logq_;}
-int CuPolynomial::device(void) { return device_;}
-int CuPolynomial::domain(void) { return domain_;}
-bool CuPolynomial::isProd(void) { return isProd_;}
-ZZX CuPolynomial::zRep(void) { return zRep_;}
-uint32 * CuPolynomial::rRep(void) { return rRep_;}
-uint32 * CuPolynomial::cRep(void) { return cRep_;}
-uint64 * CuPolynomial::nRep(void) { return nRep_;}
+int CuPolynomial::logq() { return logq_;}
+int CuPolynomial::device() { return device_;}
+int CuPolynomial::domain() { return domain_;}
+bool CuPolynomial::isProd() { return isProd_;}
+ZZX CuPolynomial::zRep() { return zRep_;}
+uint32 * CuPolynomial::rRep() { return rRep_;}
+uint32 * CuPolynomial::cRep() { return cRep_;}
+uint64 * CuPolynomial::nRep() { return nRep_;}
 //-- Domain Conversions ------------------------------------
 void CuPolynomial::z2r(cudaStream_t st) {
 	if (domain_ != 0) {
@@ -531,7 +516,28 @@ size_t CuPolynomial::rRepSize() { return param.rawLen*coeffWords()*sizeof(uint32
 ///////////////////////////////////////////////////////////////////////////////
 //// @class CuCtxt ////////////////////////////////////////////////////////////
 //-- Get Methods -------------------------------------------
-int CuCtxt::level() { return (param.logCoeffMax-logq_)/param.logCoeffCut;}
+void CuCtxt::setLevel(int lvl, int domain, int device, cudaStream_t st) {
+	level_ = lvl;
+	logq_ = param._logCoeff(lvl);
+	domain_ = domain;
+	device_ = device;
+	if (domain_ == 0)
+		clear (zRep_);
+	else if (domain_ == 1)
+		rRepCreate(st);
+	else if (domain_ == 2)
+		cRepCreate(st);
+	else if (domain_ == 3)
+		nRepCreate(st);
+}
+void CuCtxt::setLevel(int lvl, int device, ZZX val) {
+	level_ = lvl;
+	logq_ = param._logCoeff(lvl);
+	domain_ = 0;
+	device_ = device;
+	zRep_ = val;
+}
+int CuCtxt::level() { return level_;}
 //-- Noise Control -----------------------------------------
 void CuCtxt::modSwitch(cudaStream_t st) {
 	if (logq_ < param.logCoeffMin+param.logCoeffCut) {
@@ -543,17 +549,18 @@ void CuCtxt::modSwitch(cudaStream_t st) {
 	crtModSwitch(cRep_, cRep_, logq_, device_, st);
 	CSC(cudaStreamSynchronize(st));
 	logq_ -= param.logCoeffCut;
+	level_ ++;
 }
 void CuCtxt::modSwitch(int lvl, cudaStream_t st) {
-	if (lvl < level() || lvl >= param.depth) {
+	if (lvl < level_ || lvl >= param.depth) {
 		printf("Error: ModSwitch to unavailable level!\n");
 		terminate();
 	}
-	else if (lvl == level())
+	else if (lvl == level_)
 		return;
 	x2c();
 	CSC(cudaSetDevice(device_));
-	while (lvl > level()) {
+	while (lvl > level_) {
 		crtModSwitch(cRep_, cRep_, logq_, device_, st);
 		logq_ -= param.logCoeffCut;
 	}
@@ -563,7 +570,7 @@ void CuCtxt::relin(cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	x2r();
 	nRepCreate(st);
-	relinearization(nRep_, rRep_, level(), device_, st);
+	relinearization(nRep_, rRep_, level_, device_, st);
 	CSC(cudaStreamSynchronize(st));
 	rRepFree();
 	isProd_ = true;
@@ -571,11 +578,30 @@ void CuCtxt::relin(cudaStream_t st) {
 	n2c();
 	CSC(cudaStreamSynchronize(st));
 }
-size_t CuCtxt::cRepSize() { return param._numCrtPrime(level())*param.crtLen*sizeof(uint32);}
-size_t CuCtxt::nRepSize() { return param._numCrtPrime(level())*param.nttLen*sizeof(uint64);}
+size_t CuCtxt::cRepSize() { return param._numCrtPrime(level_)*param.crtLen*sizeof(uint32);}
+size_t CuCtxt::nRepSize() { return param._numCrtPrime(level_)*param.nttLen*sizeof(uint64);}
 
 ///////////////////////////////////////////////////////////////////////////////
 //// @class CuPtxt ////////////////////////////////////////////////////////////
+void CuPtxt::setLogq(int logq, int domain, int device, cudaStream_t st) {
+	logq_ = logq;
+	domain_ = domain;
+	device_ = device;
+	if (domain_ == 0)
+		clear (zRep_);
+	else if (domain_ == 1)
+		rRepCreate(st);
+	else if (domain_ == 2)
+		cRepCreate(st);
+	else if (domain_ == 3)
+		nRepCreate(st);
+}
+void CuPtxt::setLogq(int logq, int device, ZZX val) {
+	logq_ = logq;
+	domain_ = 0;
+	device_ = device;
+	zRep_ = val;
+}
 size_t CuPtxt::cRepSize() { return param.crtLen*sizeof(uint32);}
 size_t CuPtxt::nRepSize() { return param.nttLen*sizeof(uint64);}
 
