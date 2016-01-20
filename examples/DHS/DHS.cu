@@ -133,8 +133,8 @@ int CuDHS::factorDegree() {
 void CuDHS::genPolyMod_() {
 	int s;
 	polyMod_ = 1;
-	ZZX t_vec[param.mSize];
-	int s_vec[param.mSize];
+	ZZX *t_vec = new ZZX[param.mSize];
+	int *s_vec = new int[param.mSize];
 	for (int i=0; i<param.mSize; i++)
 		s_vec[i] = 0;
 	for (int d=1; d<=param.mSize; d++) {
@@ -153,6 +153,8 @@ void CuDHS::genPolyMod_() {
 	for (int i=0; i<param.mSize; i++)
 		if (s_vec[i] == -1)
 			polyMod_ /=  t_vec[i];
+	delete [] t_vec;
+	delete [] s_vec;
 }
 void CuDHS::genPkSk() {
 	// sample

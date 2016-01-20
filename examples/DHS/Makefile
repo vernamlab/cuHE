@@ -4,7 +4,7 @@ LIBS := -lm -lntl -lgmp
 
 CCDEP := $(CC) $(CCFLAGS) -gencode arch=compute_30,code=sm_30 -odir "build" -M -o 
 CCOBJ := $(CC) $(CCFLAGS) --compile --relocatable-device-code=false -gencode arch=compute_30,code=compute_30 -gencode arch=compute_30,code=sm_30 -x cu -o
-CCEXE := $(CC) --cudart static -Xlinker -lgomp $(CFLAGS) -link -w
+CCEXE := $(CC) --cudart static -Xlinker $(CFLAGS) -w
 all: test
 test: test.o DHS.o
 	$(CCEXE) -o test test.o DHS.o ../../cuhe/libcuHE.a $(LIBS)
