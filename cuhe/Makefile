@@ -9,7 +9,7 @@ CU	= /usr/local/cuda/bin/nvcc
 FMACH	= -m64
 FOPTM	= -O2
 FC++11	= -std=c++11
-FOMP	= 
+FOMP	= -fopenmp
 # CUDA Flags
 FARCH	= -arch=compute_30
 FCODE	= -code=sm_30
@@ -23,15 +23,15 @@ LMATH	= -lm
 LNTL	= -lntl
 LGMP	= -lgmp
 LOMP	= -lgomp
-LINKERS	= $(LCUDART) $(LMATH) $(LNTL) $(LGMP) $(LOMP)
+LINKERS	= $(LCUDART) $(LMATH) $(LNTL) $(LGMP)
 
 # Commands
 COMPCC	= $(CC) $(CXFLAGS)
 COMPCX	= $(CX) $(CXFLAGS)
 COMPCU	= $(CU) $(CXFLAGS) $(CUFLAGS)
-LINKCC	= $(CC) $(CXFLAGS) $(LINKERS) -link -w
-LINKCX	= $(CX) $(CXFLAGS) $(LINKERS) -link -w
-LINKCU	= $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -link -w
+LINKCC	= $(CC) $(CXFLAGS) $(LINKERS) -w
+LINKCX	= $(CX) $(CXFLAGS) $(LINKERS) -w
+LINKCU	= $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -w
 
 #################################################
 #################################################
