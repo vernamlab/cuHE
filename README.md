@@ -12,7 +12,7 @@ The library pushes performance to a limit. A number of optimizations such as alg
 
 2. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating NTRU based homomorphic encryption using GPUs." High Performance Extreme Computing Conference (HPEC), 2014 IEEE. IEEE, 2014. [[draft][4]] [[IEEE Xplore][16]]
 
-3. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating SWHE Based PIRs Using GPUs." Financial Cryptography and Data Security: FC 2015 International Workshops, BITCOIN, WAHC, and Wearable, San Juan, Puerto Rico, January 30, 2015, Revised Selected Papers. Vol. 8976. Springer, 2015. ([draft][5])([Springer][17])
+3. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating SWHE Based PIRs Using GPUs." Financial Cryptography and Data Security: FC 2015 International Workshops, BITCOIN, WAHC, and Wearable, San Juan, Puerto Rico, January 30, 2015, Revised Selected Papers. Vol. 8976. Springer, 2015. [[draft][5]] [[Springer][17]]
 
 Examples
 --------
