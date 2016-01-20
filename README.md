@@ -8,9 +8,9 @@ Features
 --------
 The library pushes performance to a limit. A number of optimizations such as algebraic techniques for efficient evaluation, memory minimization techniques, memory and stream scheduling and low level CUDA hand-tuned assembly optimizations are included to take full advantage of the mass parallelism and high memory bandwidth GPUs offer. The arithmetic functions constructed to handle very large polynomial operands adopt the Chinese remainder theorem (CRT), the number-theoretic transform (NTT) and Barrett reduction based methods. A few algorithms and routines of the library is described in [this paper][3], along with a performance analysis. More details on arithmetic methods and optimizations regarding HE are explained in our previous papers listed below.
 
-1. Dai, Wei, and Berk Sunar. "cuHE: A Homomorphic Encryption Accelerator Library." Cryptography and Information Security in the Balkans. Springer International Publishing, 2015. 169-186. ([draft][3])([Springer][15])
+1. Dai, Wei, and Berk Sunar. "cuHE: A Homomorphic Encryption Accelerator Library." Cryptography and Information Security in the Balkans. Springer International Publishing, 2015. 169-186. [[draft][3]] [[Springer][15]]
 
-2. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating NTRU based homomorphic encryption using GPUs." High Performance Extreme Computing Conference (HPEC), 2014 IEEE. IEEE, 2014. ([draft][4])([IEEE Xplore][16])
+2. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating NTRU based homomorphic encryption using GPUs." High Performance Extreme Computing Conference (HPEC), 2014 IEEE. IEEE, 2014. [[draft][4]] [[IEEE Xplore][16]]
 
 3. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating SWHE Based PIRs Using GPUs." Financial Cryptography and Data Security: FC 2015 International Workshops, BITCOIN, WAHC, and Wearable, San Juan, Puerto Rico, January 30, 2015, Revised Selected Papers. Vol. 8976. Springer, 2015. ([draft][5])([Springer][17])
 
