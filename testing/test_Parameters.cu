@@ -27,23 +27,22 @@
 
 #include "../cuhe/Parameters.h"
 #include <stdio.h>
+using namespace cuHE;
 
 int main () {
-	cuHE::setParam(5, 2, 8, 20, 22, 21845);
-	cuHE::Param par = cuHE::globalParam();
-	printf("Max Coeff: %d bits.\n", par.logCoeffMax);
-	printf("Min Coeff: %d bits.\n", par.logCoeffMin);
-	printf("Cut Coeff: %d bits.\n", par.logCoeffCut);
-	printf("%d crt primes with %d bits.\n", par.numCrtPrime, par.logCrtPrime);
+	setParam(5, 2, 8, 20, 22, 21845);
+	printf("Max Coeff: %d bits.\n", param.logCoeffMax);
+	printf("Min Coeff: %d bits.\n", param.logCoeffMin);
+	printf("Cut Coeff: %d bits.\n", param.logCoeffCut);
+	printf("%d crt primes with %d bits.\n", param.numCrtPrime, param.logCrtPrime);
 
-	cuHE::resetParam();
+	resetParam();
 
-	cuHE::setParam(10, 2, 16, 20, 15, 8191);
-	par = cuHE::globalParam();
-	printf("Max Coeff: %d bits.\n", par.logCoeffMax);
-	printf("Min Coeff: %d bits.\n", par.logCoeffMin);
-	printf("Cut Coeff: %d bits.\n", par.logCoeffCut);
-	printf("%d crt primes with %d bits.\n", par.numCrtPrime, par.logCrtPrime);
+	setParam(2, 2, 0, 40, 10, 17);
+	printf("Max Coeff: %d bits.\n", param.logCoeffMax);
+	printf("Min Coeff: %d bits.\n", param.logCoeffMin);
+	printf("Cut Coeff: %d bits.\n", param.logCoeffCut);
+	printf("%d crt primes with %d bits.\n", param.numCrtPrime, param.logCrtPrime);
 
 	return 0;
 }

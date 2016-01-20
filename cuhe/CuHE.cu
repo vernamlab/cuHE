@@ -25,20 +25,19 @@
 #include "Debug.h"
 #include "Operations.h"
 #include "DeviceManager.h"
-#include "Parameters.h"
+//#include "Parameters.h"
 
 namespace cuHE {
 
 ///////////////////////////////////////////////////////////////////////////////
 //// Initailization ///////////////////////////////////////////////////////////
 static uint32 **dhBuffer_; // pinned memory for ZZX-Raw conversions
-static Param par;
 
 void initCuHE(ZZ *coeffMod_, ZZX modulus) {
 	dhBuffer_ = new uint32 *[numDevices()];
 	for (int i=0; i<numDevices(); i++) {
 		CSC(cudaSetDevice(i));
-		CSC(cudaMallocHost(&dhBuffer_[i], par.rawLen*par._wordsCoeff(0)*sizeof(uint32)));
+		CSC(cudaMallocHost(&dhBuffer_[i], param.rawLen*param._wordsCoeff(0)*sizeof(uint32)));
 		for (int j=0; j<numDevices(); j++) {
 			if (i != j)
 				CSC(cudaDeviceEnablePeerAccess(j, 0));
@@ -50,7 +49,7 @@ void initCuHE(ZZ *coeffMod_, ZZX modulus) {
 }
 
 void startAllocator() {
-	bootDeviceAllocator(par.numCrtPrime*par.nttLen*sizeof(uint64));
+	bootDeviceAllocator(param.numCrtPrime*param.nttLen*sizeof(uint64));
 }
 
 void stopAllocator() {
@@ -67,7 +66,6 @@ int numGPUs() {
 
 void setParameters(int d, int p, int w, int min, int cut, int m) {
 	setParam(d, p, w, min, cut, m);
-	par = globalParam();
 }
 
 void resetParameters() {
@@ -208,7 +206,7 @@ void cNot(CuCtxt& out, CuCtxt& in, cudaStream_t st) {
 		out.set(in.logq(), in.domain(), in.device(), st);
 	}
 	CSC(cudaSetDevice(out.device()));
-	crtAddInt(out.cRep(), in.cRep(), (unsigned)par.modMsg-1, out.logq(), out.device(), st);
+	crtAddInt(out.cRep(), in.cRep(), (unsigned)param.modMsg-1, out.logq(), out.device(), st);
 	CSC(cudaStreamSynchronize(st));
 }
 void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
@@ -252,8 +250,8 @@ void copyTo(CuCtxt& dst, CuCtxt& src, int dstDev, cudaStream_t st) {
 //// NTL Interface ////////////////////////////////////////////////////////////
 void mulZZX(ZZX& out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
 	CuCtxt cin0, cin1;
-	cin0.set(par._logCoeff(lvl), dev, in0);
-	cin1.set(par._logCoeff(lvl), dev, in1);
+	cin0.set(param._logCoeff(lvl), dev, in0);
+	cin1.set(param._logCoeff(lvl), dev, in1);
 	cin0.x2n(st);
 	cin1.x2n(st);
 	cAnd(cin0, cin0, cin1, st);
@@ -336,7 +334,7 @@ void CuPolynomial::z2r(cudaStream_t st) {
 	}
 	CSC(cudaSetDevice(device_));
 	rRepCreate(st);
-	for(int i=0; i<par.rawLen; i++)
+	for(int i=0; i<param.rawLen; i++)
 		BytesFromZZ((uint8 *)(dhBuffer_[device_]+i*coeffWords()),
 				coeff(zRep_, i), coeffWords()*sizeof(uint32));
 	CSC(cudaMemcpyAsync(rRep_, dhBuffer_[device_], rRepSize(),
@@ -355,7 +353,7 @@ void CuPolynomial::r2z(cudaStream_t st) {
 			cudaMemcpyDeviceToHost, st));
 	cudaStreamSynchronize(st);
 	clear(zRep_);
-	for(int i=0; i<par.modLen; i++)
+	for(int i=0; i<param.modLen; i++)
 		SetCoeff( zRep_, i, ZZFromBytes( (uint8 *)(dhBuffer_[device_]
 			+i*coeffWords() ), coeffWords()*sizeof(uint32)) );
 	rRepFree();
@@ -366,7 +364,7 @@ void CuPolynomial::r2c(cudaStream_t st) {
 		printf("Error: Not in domain RAW!\n");
 		terminate();
 	}
-	if (logq_ > par.logCrtPrime) {
+	if (logq_ > param.logCrtPrime) {
 		CSC(cudaSetDevice(device_));
 		cRepCreate(st);
 		crt(cRep_, rRep_, logq_, device_, st);
@@ -383,7 +381,7 @@ void CuPolynomial::c2r(cudaStream_t st) {
 		printf("Error: Not in domain CRT!\n");
 		terminate();
 	}
-	if (logq_ > par.logCrtPrime) {
+	if (logq_ > param.logCrtPrime) {
 		CSC(cudaSetDevice(device_));
 		rRepCreate(st);
 		icrt(rRep_, cRep_, logq_, device_, st);
@@ -481,7 +479,7 @@ void CuPolynomial::x2n(cudaStream_t st) {
 void CuPolynomial::rRepCreate(cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	if (deviceAllocatorIsOn())
-		rRep_ = (uint32 *)deviceMalloc(par.numCrtPrime*par.nttLen*sizeof(uint64));
+		rRep_ = (uint32 *)deviceMalloc(param.numCrtPrime*param.nttLen*sizeof(uint64));
 	else
 		CSC(cudaMalloc(&rRep_, rRepSize()));
 	CSC(cudaMemsetAsync(rRep_, 0, rRepSize(), st));
@@ -489,7 +487,7 @@ void CuPolynomial::rRepCreate(cudaStream_t st) {
 void CuPolynomial::cRepCreate(cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	if (deviceAllocatorIsOn())
-		cRep_ = (uint32 *)deviceMalloc(par.numCrtPrime*par.nttLen*sizeof(uint64));
+		cRep_ = (uint32 *)deviceMalloc(param.numCrtPrime*param.nttLen*sizeof(uint64));
 	else
 		CSC(cudaMalloc(&cRep_, cRepSize()));
 	CSC(cudaMemsetAsync(cRep_, 0, cRepSize(), st));
@@ -497,7 +495,7 @@ void CuPolynomial::cRepCreate(cudaStream_t st) {
 void CuPolynomial::nRepCreate(cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	if (deviceAllocatorIsOn())
-		nRep_ = (uint64 *)deviceMalloc(par.numCrtPrime*par.nttLen*sizeof(uint64));
+		nRep_ = (uint64 *)deviceMalloc(param.numCrtPrime*param.nttLen*sizeof(uint64));
 	else
 		CSC(cudaMalloc(&nRep_, nRepSize()));
 	CSC(cudaMemsetAsync(nRep_, 0, nRepSize(), st));
@@ -528,15 +526,15 @@ void CuPolynomial::nRepFree() {
 }
 // Utilities -----------------------------------------------
 int CuPolynomial::coeffWords() { return (logq_+31)/32;}
-size_t CuPolynomial::rRepSize() { return par.rawLen*coeffWords()*sizeof(uint32);}
+size_t CuPolynomial::rRepSize() { return param.rawLen*coeffWords()*sizeof(uint32);}
 
 ///////////////////////////////////////////////////////////////////////////////
 //// @class CuCtxt ////////////////////////////////////////////////////////////
 //-- Get Methods -------------------------------------------
-int CuCtxt::level() { return (par.logCoeffMax-logq_)/par.logCoeffCut;}
+int CuCtxt::level() { return (param.logCoeffMax-logq_)/param.logCoeffCut;}
 //-- Noise Control -----------------------------------------
 void CuCtxt::modSwitch(cudaStream_t st) {
-	if (logq_ < par.logCoeffMin+par.logCoeffCut) {
+	if (logq_ < param.logCoeffMin+param.logCoeffCut) {
 		printf("Error: Cannot do modSwitch on last level!\n");
 		terminate();
 	}
@@ -544,10 +542,10 @@ void CuCtxt::modSwitch(cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	crtModSwitch(cRep_, cRep_, logq_, device_, st);
 	CSC(cudaStreamSynchronize(st));
-	logq_ -= par.logCoeffCut;
+	logq_ -= param.logCoeffCut;
 }
 void CuCtxt::modSwitch(int lvl, cudaStream_t st) {
-	if (lvl < level() || lvl >= par.depth) {
+	if (lvl < level() || lvl >= param.depth) {
 		printf("Error: ModSwitch to unavailable level!\n");
 		terminate();
 	}
@@ -557,7 +555,7 @@ void CuCtxt::modSwitch(int lvl, cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	while (lvl > level()) {
 		crtModSwitch(cRep_, cRep_, logq_, device_, st);
-		logq_ -= par.logCoeffCut;
+		logq_ -= param.logCoeffCut;
 	}
 	CSC(cudaStreamSynchronize(st));
 }
@@ -573,12 +571,12 @@ void CuCtxt::relin(cudaStream_t st) {
 	n2c();
 	CSC(cudaStreamSynchronize(st));
 }
-size_t CuCtxt::cRepSize() { return par._numCrtPrime(level())*par.crtLen*sizeof(uint32);}
-size_t CuCtxt::nRepSize() { return par._numCrtPrime(level())*par.nttLen*sizeof(uint64);}
+size_t CuCtxt::cRepSize() { return param._numCrtPrime(level())*param.crtLen*sizeof(uint32);}
+size_t CuCtxt::nRepSize() { return param._numCrtPrime(level())*param.nttLen*sizeof(uint64);}
 
 ///////////////////////////////////////////////////////////////////////////////
 //// @class CuPtxt ////////////////////////////////////////////////////////////
-size_t CuPtxt::cRepSize() { return par.crtLen*sizeof(uint32);}
-size_t CuPtxt::nRepSize() { return par.nttLen*sizeof(uint64);}
+size_t CuPtxt::cRepSize() { return param.crtLen*sizeof(uint32);}
+size_t CuPtxt::nRepSize() { return param.nttLen*sizeof(uint64);}
 
 } // end cuHE

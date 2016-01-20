@@ -2,11 +2,11 @@
 using namespace cuHE;
 
 int main() {
-	setParam(2, 2, 0, 40, 10, 17);
+	setParameters(2, 2, 0, 40, 10, 17);
 	ZZX polyMod;
-	for (int i=0; i<=modLen(); i++)
+	for (int i=0; i<=param.modLen; i++)
 		SetCoeff(polyMod, i, 1);
-	ZZ *coeffMod = new ZZ[depth()];
+	ZZ *coeffMod = new ZZ[param.depth];
 	initCuHE(coeffMod, polyMod);
 	ZZX a;
 	SetCoeff(a, 1, 7);

@@ -40,6 +40,7 @@ SRCCC	=
 SRCCX	=
 SRCCU	= test_ModP.cu\
 		  test_Parameters.cu\
+		  test_CuHE.cu\
 		  ../cuhe/Parameters.cu
 SRCS	= $(SRCCC) $(SRCCX) $(SRCCU)
 
@@ -56,11 +57,12 @@ OBJCU	= $(SRCCU:.cu=.o)
 OBJS	= $(OBJCC) $(OBJCX) $(OBJCU)
 
 ## Library Files
-LIBS	= 
+LIBS	= ../cuhe/libcuHE.a
 
 ## Executable Targets
 TARS	= test_ModP\
-		  test_Parameters
+		  test_Parameters\
+		  test_CuHE
 
 #################################################
 #################################################
@@ -71,6 +73,9 @@ test_ModP: test_ModP.o
 
 test_Parameters: test_Parameters.o ../cuhe/Parameters.o
 	$(LINKCU) -o $@ test_Parameters.o ../cuhe/Parameters.o
+
+test_CuHE: test_CuHE.o ../cuhe/libcuHE.a
+	$(LINKCU) -o $@ test_CuHE.o ../cuhe/libcuHE.a
 
 $(OBJCC): $(@:%.o=%.c)
 	$(COMPCC) -M $(@:%.o=%.c) -o $(@:%.o=%.d)

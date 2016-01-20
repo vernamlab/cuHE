@@ -30,6 +30,7 @@
 #pragma once
 
 #include "Relinearization.h"
+#include "Parameters.h"
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <NTL/ZZ.h>

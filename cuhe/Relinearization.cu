@@ -38,23 +38,23 @@ namespace cuHE {
 static uint64** d_relin; // nttw conversion buffer
 static uint64*** d_ek; // buffer for a part of eval keys
 static uint64** h_ek; // all eval keys in ntt domain
-static int more = 1; // 1 <= more <= numCrtPrime()
+static int more = 1; // 1 <= more <= param.numCrtPrime
 
 ///////////////////////////////////////////////////////////////////////////////
 //// Pre-computation //////////////////////////////////////////////////////////
 void initRelin(ZZX* evalkey) {
 	CSC(cudaSetDevice(0));	
-	h_ek = new uint64* [numCrtPrime()];
-	for (int i=0; i<numCrtPrime(); i++)
-		CSC(cudaMallocHost(&h_ek[i], numEvalKey()*nttLen()*sizeof(uint64)));
+	h_ek = new uint64* [param.numCrtPrime];
+	for (int i=0; i<param.numCrtPrime; i++)
+		CSC(cudaMallocHost(&h_ek[i], param.numEvalKey*param.nttLen*sizeof(uint64)));
 
-	for (int i=0; i<numEvalKey(); i++) {
+	for (int i=0; i<param.numEvalKey; i++) {
 		CuCtxt ek;
-		ek.set(logCoeff(0), 0, evalkey[i]);
+		ek.set(param._logCoeff(0), 0, evalkey[i]);
 		ek.x2n();
-		for (int j=0; j<numCrtPrime(); j++)
-			CSC(cudaMemcpy(h_ek[j]+i*nttLen(), ek.nRep()+j*nttLen(),
-					nttLen()*sizeof(uint64), cudaMemcpyDeviceToHost));
+		for (int j=0; j<param.numCrtPrime; j++)
+			CSC(cudaMemcpy(h_ek[j]+i*param.nttLen, ek.nRep()+j*param.nttLen,
+					param.nttLen*sizeof(uint64), cudaMemcpyDeviceToHost));
 		ek.~CuCtxt();
 	}
 
@@ -62,13 +62,13 @@ void initRelin(ZZX* evalkey) {
 	d_ek = new uint64** [numDevices()];
 	for (int dev=0; dev<numDevices(); dev++) {
 		CSC(cudaSetDevice(dev));
-		CSC(cudaMalloc(&d_relin[dev], numEvalKey()*nttLen()*sizeof(uint64)));
+		CSC(cudaMalloc(&d_relin[dev], param.numEvalKey*param.nttLen*sizeof(uint64)));
 		d_ek[dev] = new uint64* [more];
 		for (int i=0; i<more; i++)
-			CSC(cudaMalloc(&d_ek[dev][i], numEvalKey()*nttLen()*sizeof(uint64)));
+			CSC(cudaMalloc(&d_ek[dev][i], param.numEvalKey*param.nttLen*sizeof(uint64)));
 //		for (int i=0; i<more; i++)
-//			CSC(cudaMemcpy(d_ek[dev]+i*numEvalKey()*nttLen(), h_ek[dev*more+i],
-//					numEvalKey()*nttLen()*sizeof(uint64), cudaMemcpyHostToDevice));
+//			CSC(cudaMemcpy(d_ek[dev]+i*param.numEvalKey*param.nttLen, h_ek[dev*more+i],
+//					param.numEvalKey*param.nttLen*sizeof(uint64), cudaMemcpyHostToDevice));
 	}
 }
 
@@ -76,12 +76,12 @@ void initRelin(ZZX* evalkey) {
 //// Operations ///////////////////////////////////////////////////////////////
 void relinearization(uint64 *dst, uint32 *src, int lvl, int dev, cudaStream_t st) {
 	CSC(cudaSetDevice(dev));
-	nttw(d_relin[dev], src, logCoeff(lvl), dev, st);
-	for (int i=0; i<numCrtPrime(lvl); i++) {
+	nttw(d_relin[dev], src, param._logCoeff(lvl), dev, st);
+	for (int i=0; i<param._numCrtPrime(lvl); i++) {
 		CSC(cudaMemcpyAsync(d_ek[dev][i%more], h_ek[i],
-				numEvalKey(lvl)*nttLen()*sizeof(uint64), cudaMemcpyHostToDevice, st));
-		relinMulAddPerCrt<<<(nttLen()+63)/64, 64, 0, st>>>(dst+i*nttLen(), d_relin[dev],
-				d_ek[dev][i%more], numEvalKey(lvl), nttLen());
+				param._numEvalKey(lvl)*param.nttLen*sizeof(uint64), cudaMemcpyHostToDevice, st));
+		relinMulAddPerCrt<<<(param.nttLen+63)/64, 64, 0, st>>>(dst+i*param.nttLen, d_relin[dev],
+				d_ek[dev][i%more], param._numEvalKey(lvl), param.nttLen);
 		CCE();
 	}
 }

@@ -27,24 +27,8 @@ NTL_CLIENT
 
 namespace cuHE {
 
-static Param* param = NULL;
-
-Param globalParam() {
-	return *param;
-}
-
-void setParam(int d, int p, int w, int min, int cut, int m) {
-	if (param != NULL)
-		delete param;
-	param = new Param(d, p, w, min, cut, m);
-}
-
-void resetParam() {
-	param->~Param();
-	if (param != NULL)
-		delete param;
-	param = NULL;
-}
+/** Parameter values are here */
+GlobalParameters param;
 
 static ZZ euler_toient(ZZ x) {
 	if (x < to_ZZ("3"))
@@ -65,60 +49,61 @@ static ZZ euler_toient(ZZ x) {
 	return res;
 }
 
-Param::Param() {}
+void setParam(int d, int p, int w, int min, int cut, int m) {
+	param.depth = d;
+	param.modMsg = p;
+	param.logRelin = w;
+	param.logCoeffMin = min;
+	param.logCoeffCut = cut;
+	param.mSize = m;
 
-Param::Param(int d, int p, int w, int min, int cut, int m) {
-	depth = d;
-	modMsg = p;
-	logRelin = w;
-	logCoeffMin = min;
-	logCoeffCut = cut;
-	mSize = m;
+	param.logCoeffMax = param.logCoeffMin+param.logCoeffCut*(param.depth-1);
+	param.modLen = to_long(euler_toient(to_ZZ(param.mSize)));
+	param.modLen2 = 0x1<<NumBits(to_ZZ(param.modLen)-1);
+	if (param.modLen2 < 8192)
+		param.modLen2 = 8192;
+	param.rawLen = param.modLen2;
+	param.crtLen = param.modLen2;
+	param.nttLen = 2*param.modLen2;
 
-	logCoeffMax = logCoeffMin+logCoeffCut*(depth-1);
-	modLen = to_long(euler_toient(to_ZZ(mSize)));
-	modLen2 = 0x1<<NumBits(to_ZZ(modLen)-1);
-	if (modLen2 < 8192)
-		modLen2 = 8192;
-	rawLen = modLen2;
-	crtLen = modLen2;
-	nttLen = 2*modLen2;
+	param.logMsg = NumBits(to_ZZ(param.modMsg)-1);
+	param.wordsMsg = (param.logMsg+31)/32;
 
-	logMsg = NumBits(to_ZZ(modMsg)-1);
-	wordsMsg = (logMsg+31)/32;
-
-	numEvalKey = (logCoeffMax+logRelin-1)/logRelin;
+	if (param.logRelin != 0)
+		param.numEvalKey = (param.logCoeffMax+param.logRelin-1)/param.logRelin;
+	else
+		param.numEvalKey = 0;
 
 	// use as large and as few # of crt primes as possible
-	logCrtPrime = NumBits(SqrRoot(to_ZZ(0xffffffff00000001)/modLen));
-	numCrtPrime = (logCoeffMin+logCrtPrime-1)/logCrtPrime;
-	logCrtPrime = 0;
-	while (logCrtPrime*numCrtPrime < logCoeffMin)
-		logCrtPrime ++;
-	numCrtPrime += depth-1;
+	param.logCrtPrime = NumBits(SqrRoot(to_ZZ(0xffffffff00000001)/param.modLen));
+	param.numCrtPrime = (param.logCoeffMin+param.logCrtPrime-1)/param.logCrtPrime;
+	param.logCrtPrime = 0;
+	while (param.logCrtPrime*param.numCrtPrime < param.logCoeffMin)
+		param.logCrtPrime ++;
+	param.numCrtPrime += param.depth-1;
 }
 
-Param::~Param() {
-	mSize = 0;
-	modLen = 0;
-	modLen2 = 0;
-	rawLen = 0;
-	crtLen = 0;
-	nttLen = 0;
-	logCoeffMax = 0;
-	logCoeffMin = 0;
-	logCoeffCut = 0;
-	depth = 0;
-	modMsg = 0;
-	logMsg = 0;
-	wordsMsg = 0;
-	logRelin = 0;
-	numEvalKey = 0;
-	logCrtPrime = 0;
-	numCrtPrime = 0;
+void resetParam() {
+	param.mSize = 0;
+	param.modLen = 0;
+	param.modLen2 = 0;
+	param.rawLen = 0;
+	param.crtLen = 0;
+	param.nttLen = 0;
+	param.logCoeffMax = 0;
+	param.logCoeffMin = 0;
+	param.logCoeffCut = 0;
+	param.depth = 0;
+	param.modMsg = 0;
+	param.logMsg = 0;
+	param.wordsMsg = 0;
+	param.logRelin = 0;
+	param.numEvalKey = 0;
+	param.logCrtPrime = 0;
+	param.numCrtPrime = 0;
 }
 
-int Param::_numCrtPrime(int lvl) {
+int GlobalParameters::_numCrtPrime(int lvl) {
 	if (lvl == -1)
 		return 1;
 	else if (lvl >= depth) {
@@ -129,7 +114,7 @@ int Param::_numCrtPrime(int lvl) {
 		return numCrtPrime-lvl;
 }
 
-int Param::_logCoeff(int lvl) {
+int GlobalParameters::_logCoeff(int lvl) {
 	if (lvl == -1)
 		return logMsg;
 	else if (lvl < depth)
@@ -142,16 +127,16 @@ int Param::_logCoeff(int lvl) {
 	}
 }
 
-int Param::_wordsCoeff(int lvl) {
+int GlobalParameters::_wordsCoeff(int lvl) {
 	int t = (_logCoeff(lvl)+31)/32;
 	return t > 1 ? t : 1;
 }
 
-int Param::_numEvalKey(int lvl) {
+int GlobalParameters::_numEvalKey(int lvl) {
 	return (_logCoeff(lvl)+logRelin-1)/logRelin;
 }
 
-int Param::_getLevel(int logq) {
+int GlobalParameters::_getLevel(int logq) {
 	if (logq >= logCoeffMin)
 		return (logCoeffMax-logq)/logCoeffCut;
 	else
