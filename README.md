@@ -8,11 +8,11 @@ Features
 --------
 The library pushes performance to a limit. A number of optimizations such as algebraic techniques for efficient evaluation, memory minimization techniques, memory and stream scheduling and low level CUDA hand-tuned assembly optimizations are included to take full advantage of the mass parallelism and high memory bandwidth GPUs offer. The arithmetic functions constructed to handle very large polynomial operands adopt the Chinese remainder theorem (CRT), the number-theoretic transform (NTT) and Barrett reduction based methods. A few algorithms and routines of the library is described in [this paper][3], along with a performance analysis. More details on arithmetic methods and optimizations regarding HE are explained in our previous papers listed below.
 
-1. Dai, Wei, and Berk Sunar. "cuHE: A Homomorphic Encryption Accelerator Library." Cryptography and Information Security in the Balkans. Springer International Publishing, 2015. 169-186. ([draft][3])
+1. Dai, Wei, and Berk Sunar. "cuHE: A Homomorphic Encryption Accelerator Library." Cryptography and Information Security in the Balkans. Springer International Publishing, 2015. 169-186. ([draft][3][Springer][15])
 
-2. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating NTRU based homomorphic encryption using GPUs." High Performance Extreme Computing Conference (HPEC), 2014 IEEE. IEEE, 2014. ([draft][4])
+2. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating NTRU based homomorphic encryption using GPUs." High Performance Extreme Computing Conference (HPEC), 2014 IEEE. IEEE, 2014. ([draft][4][IEEE Xplore][16])
 
-3. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating SWHE Based PIRs Using GPUs." Financial Cryptography and Data Security: FC 2015 International Workshops, BITCOIN, WAHC, and Wearable, San Juan, Puerto Rico, January 30, 2015, Revised Selected Papers. Vol. 8976. Springer, 2015. ([draft][5])
+3. Dai, Wei, Yarkın Doröz, and Berk Sunar. "Accelerating SWHE Based PIRs Using GPUs." Financial Cryptography and Data Security: FC 2015 International Workshops, BITCOIN, WAHC, and Wearable, San Juan, Puerto Rico, January 30, 2015, Revised Selected Papers. Vol. 8976. Springer, 2015. ([draft][5][Springer][17])
 
 Examples
 --------
@@ -61,9 +61,9 @@ CNS Award #1117590 and #1319130.
 
 [1]: http://eprint.iacr.org/2014/233/ "DHS14"
 [2]: http://eprint.iacr.org/2013/094/ "LTV13"
-[3]: http://eprint.iacr.org/2015/818/ "cuHEPDF"
-[4]: http://eprint.iacr.org/2014/389/ "Dai2014PDF"
-[5]: http://eprint.iacr.org/2015/462/ "Dai2015aPDF"
+[3]: http://eprint.iacr.org/2015/818/ "cuHEePrint"
+[4]: http://eprint.iacr.org/2014/389/ "Dai2014ePrint"
+[5]: http://eprint.iacr.org/2015/462/ "Dai2015ePrint"
 [6]: http://en.wikipedia.org/wiki/Homomorphic_encryption/ "HE"
 [7]: http://developer.nvidia.com/cuda-gpus/ "CUDAGPUs"
 [8]: http://www.shoup.net/ntl/ "NTL"
@@ -73,3 +73,6 @@ CNS Award #1117590 and #1319130.
 [12]: http://en.wikipedia.org/wiki/Barrett_reduction/ "Barrett"
 [13]: http://github.com/Veirday "WeiDaiGitHub"
 [14]: http://v.wpi.edu/ "VernamGroup"
+[15]: http://link.springer.com/chapter/10.1007%2F978-3-319-29172-7_11/ "cuHESpringer"
+[16]: http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7041001&tag=1/ "Dai2014IEEE"
+[17]: http://link.springer.com/chapter/10.1007%2F978-3-662-48051-9_12/ "Dai2015aSpringer"
