@@ -31,7 +31,7 @@ typedef	unsigned int uint32; // 32-bit unsigned integer
 typedef unsigned long int	uint64; // 64-bit unsigned integer
 #define valP 0xffffffff00000001
 #define uint32Max 0xffffffff
-
+#include <stdio.h>
 namespace cuHE {
 
 // All mod P arithmetic functions are declared below.
@@ -57,7 +57,7 @@ __device__ uint64 _mul_modP(uint64 x, uint64 y);
 __device__ uint64 _pow_modP(uint64 x, int e);
 
 // All mod P arithmetic functions are implemented below.
-__device__ void _uint96_modP(uint32 *x) {
+__noinline__ __device__ void _uint96_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -72,15 +72,15 @@ __device__ void _uint96_modP(uint32 *x) {
 		(*t) -= valP;
 	}
 }
-__device__ void _uint128_modP(uint32 *x) {
-	register uint32 bit;
-	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
-	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
-	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[2]) : "r"(x[3]));
-	asm("addc.u32 %0,%1,%2;" : "=r"(x[3]) : "r"(0), "r"(0));
-	asm("sub.cc.u32 %0,%0,%1;" : "+r"(x[0]) : "r"(x[2]));
-	asm("subc.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[3]));
-	asm("subc.u32 %0,%0,%1;" : "+r"(bit) : "r"(0));
+__noinline__ __device__ void _uint128_modP(uint32 *x) {
+	register uint32 bit = 0;
+	asm("add.cc.u32 %0, %0, %1;" : "+r"(x[1]) : "r"(x[2]));
+	asm("addc.u32 %0, 0, 0;" : "=r"(bit));
+	asm("add.cc.u32 %0, %0, %1;" : "+r"(x[2]) : "r"(x[3]));
+	asm("addc.u32 %0, 0, 0;" : "=r"(x[3]));
+	asm("sub.cc.u32 %0, %0, %1;" : "+r"(x[0]) : "r"(x[2]));
+	asm("subc.cc.u32 %0, %0, %1;" : "+r"(x[1]) : "r"(x[3]));
+	asm("subc.u32 %0, %0, %1;" : "+r"(bit) : "r"(0));
 	if (bit == uint32Max) {
 		asm("sub.cc.u32 %0,%0,%1;" : "+r"(x[0]) : "r"(uint32Max));
 		asm("subc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(0));
@@ -97,7 +97,7 @@ __device__ void _uint128_modP(uint32 *x) {
 		(*t) -= valP;
 	}
 }
-__device__ void _uint160_modP(uint32 *x) {
+__noinline__ __device__ void _uint160_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -129,7 +129,7 @@ __device__ void _uint160_modP(uint32 *x) {
 		(*t) -= valP;
 	}
 }
-__device__ void _uint192_modP(uint32 *x) {
+__noinline__ __device__ void _uint192_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -172,7 +172,7 @@ __device__ void _uint192_modP(uint32 *x) {
 		bit --;
 	}
 }
-__device__ void _uint224_modP(uint32 *x) {
+__noinline__ __device__ void _uint224_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -218,7 +218,7 @@ __device__ void _uint224_modP(uint32 *x) {
 		bit--;
 	}
 }
-__device__ uint64 _ls_modP(uint64 x, int l) {
+__noinline__ __device__ uint64 _ls_modP(uint64 x, int l) {
 	register uint64 ret, tx = x;
 	register uint32 buff[7];
 	switch(l){
@@ -303,7 +303,7 @@ __device__ uint64 _ls_modP(uint64 x, int l) {
 	}
 	return ret;
 }
-__device__ uint64 _add_modP(uint64 x, uint64 y) {
+__noinline__ __device__ uint64 _add_modP(uint64 x, uint64 y) {
 	register uint64 ret;
 	ret = x+y;
 	if (ret < x) {
@@ -314,7 +314,7 @@ __device__ uint64 _add_modP(uint64 x, uint64 y) {
 	}
 	return ret;
 }
-__device__ uint64 _sub_modP(uint64 x, uint64 y) {
+__noinline__ __device__ uint64 _sub_modP(uint64 x, uint64 y) {
 	register uint64 ret;
 	ret = x-y;
 	if (ret > x) {
@@ -322,20 +322,20 @@ __device__ uint64 _sub_modP(uint64 x, uint64 y) {
 	}
 	return ret;
 }
-__device__ uint64 _mul_modP(uint64 x, uint64 y) {
+__noinline__ __device__ uint64 _mul_modP(uint64 x, uint64 y) {
 	register uint32 mul[4];
 	register uint32 a[2], b[2];
+	register uint32 temp[2];
+	register uint64 ret;
 	a[0] = *((uint32 *)&x);
 	a[1] = *((uint32 *)&x+1);
 	b[0] = *((uint32 *)&y);
 	b[1] = *((uint32 *)&y+1);
 	// 64-bit * 64-bit
-	register uint32 temp[2];
-	register uint64 ret;
 	asm("mul.lo.u32 %0,%1,%2;" : "=r"(mul[0]) : "r"(a[0]), "r"(b[0]));
 	asm("mul.hi.u32 %0,%1,%2;" : "=r"(mul[1]) : "r"(a[0]), "r"(b[0]));
-	asm("mul.lo.u32 %0,%1,%2;" : "+r"(mul[2]) : "r"(a[1]), "r"(b[1]));
-	asm("mul.hi.u32 %0,%1,%2;" : "+r"(mul[3]) : "r"(a[1]), "r"(b[1]));
+	asm("mul.lo.u32 %0,%1,%2;" : "=r"(mul[2]) : "r"(a[1]), "r"(b[1]));
+	asm("mul.hi.u32 %0,%1,%2;" : "=r"(mul[3]) : "r"(a[1]), "r"(b[1]));
 	asm("mul.lo.u32 %0,%1,%2;" : "=r"(temp[0]) : "r"(a[0]), "r"(b[1]));
 	asm("mul.hi.u32 %0,%1,%2;" : "=r"(temp[1]) : "r"(a[0]), "r"(b[1]));
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(mul[1]) : "r"(temp[0]));
@@ -352,7 +352,7 @@ __device__ uint64 _mul_modP(uint64 x, uint64 y) {
 	ret += mul[0];
 	return ret;
 }
-__device__ uint64 _pow_modP(uint64 x, int e) {
+__noinline__ __device__ uint64 _pow_modP(uint64 x, int e) {
 	register uint64 ret = 1, tx = x;
 	while (e > 0) {
 		if (e&0x1 == 0x1) {
