@@ -25,53 +25,84 @@ SOFTWARE.
 // Test all inline device mod P = 2^64-2^32+1 operations.
 
 #include "ModP.h"
+#include "Debug.h"
 #include <time.h>
 #include <stdio.h>
 #include <NTL/ZZ.h>
 NTL_CLIENT
 
-#define		repeat	1000000
+#define num (1024*1024)
 const ZZ P = to_ZZ(0xffffffff00000001);
+ZZ temp;
 
-__global__ void _kernel_ls_modP(uint64 *x, int *l) {
-	int idx = blockIdx.x*blockDim.x+threadIdx.x;
-	if (idx < repeat) {
-		uint64 t = cuHE::_ls_modP(x[idx], l[idx]);
-		x[idx] = t;
+void rand_array(uint64 *ptr) {
+	for (int i=0; i<num; i++) {
+		ptr[i] = rand();
+		ptr[i] <<= 32;
+		ptr[i] |= rand();
 	}
 }
-int _test_ls_modP() {
-	uint64 *x;
-	int *l;
-	ZZ *chk = new ZZ[repeat];
-	cudaMallocManaged(&x, repeat*sizeof(uint64));
-	cudaMallocManaged(&l, repeat*sizeof(int));
-	for (int i=0; i<repeat; i++) {
-		chk[i] = RandomBits_ZZ(64)%P;
-		conv(x[i], chk[i]);
+void rand_offset(int *l) {
+	for (int i=0; i<num; i++) {
 		l[i] = (rand()%8)*(rand()%8)*3;
-		chk[i] <<= l[i];
-		chk[i] %= P;
 	}
-	_kernel_ls_modP<<<(repeat+1023)/1024, 1024>>>(x, l);
-	cudaDeviceSynchronize();
-	for (int i=0; i<repeat; i++) {
-		if (chk[i] != to_ZZ(x[i])) {
-			delete [] chk;
-			return -1;
+}
+void rand_exp(int *e) {
+	for (int i=0; i<num; i++) {
+		e[i] = (unsigned)rand()>>1;
+		if (e[i] < 0) {
+			printf("Error: random exponent has opposite value.\n");
+			exit(-1);
 		}
 	}
-	delete [] chk;
-	cudaFree(x);
-	cudaFree(l);
-	return 0;
 }
-int _test_add_modP() {
-	return 0;
+__global__ void _kernel_ls_modP(uint64 *dst, uint64 *src, int *offset) {
+	int idx = blockIdx.x*blockDim.x+threadIdx.x;
+	if (idx < num) {
+		uint64 t = cuHE::_ls_modP(src[idx], offset[idx]);
+		dst[idx] = t;
+	}
+}
+bool _test_ls_modP(uint64 *z, uint64 *x, int *l) {
+	_kernel_ls_modP<<<(num+1023)/1024, 1024>>>(z, x, l);
+	CCE();
+	CSC(cudaDeviceSynchronize());
+	for (int i=0; i<num; i++) {
+		conv(temp, x[i]);
+		temp <<= l[i];
+		temp %= P;
+		if (temp != to_ZZ(z[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+void print(bool result) {
+	if (result)
+		printf("pass\n");
+	else
+		printf("fail\n");
 }
 int main() {
-	int ret = 0;
-	ret += _test_ls_modP();
-	printf("test result: %d\n", ret);
-	return ret;
+	uint64 *x;
+	uint64 *y;
+	uint64 *z;
+	int *l;
+	int *e;
+	CSC(cudaMallocManaged(&x, num*sizeof(uint64)));
+	CSC(cudaMallocManaged(&y, num*sizeof(uint64)));
+	CSC(cudaMallocManaged(&z, num*sizeof(uint64)));
+	CSC(cudaMallocManaged(&l, num*sizeof(int)));
+	CSC(cudaMallocManaged(&e, num*sizeof(int)));
+	srand(time(NULL));
+	rand_array(x);
+	rand_offset(l);
+	printf("_ls_modP:\t");
+	print(_test_ls_modP(z, x, l));
+	CSC(cudaFree(x));
+	CSC(cudaFree(y));
+	CSC(cudaFree(z));
+	CSC(cudaFree(l));
+	CSC(cudaFree(e));
+	return 0;
 }
