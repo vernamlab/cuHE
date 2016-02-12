@@ -33,7 +33,6 @@ NTL_CLIENT
 
 #define num (1024*1024)
 const ZZ P = to_ZZ(0xffffffff00000001);
-ZZ temp;
 
 void rand_array(uint64 *ptr) {
 	for (int i=0; i<num; i++) {
@@ -67,6 +66,7 @@ bool _test_ls_modP(uint64 *z, uint64 *x, int *l) {
 	_kernel_ls_modP<<<(num+1023)/1024, 1024>>>(z, x, l);
 	CCE();
 	CSC(cudaDeviceSynchronize());
+	ZZ temp;
 	for (int i=0; i<num; i++) {
 		conv(temp, x[i]);
 		temp <<= l[i];
@@ -88,6 +88,7 @@ bool _test_add_modP(uint64 *z, uint64 *x, uint64 *y) {
 	_kernel_add_modP<<<(num+1023)/1024, 1024>>>(z, x, y);
 	CCE();
 	CSC(cudaDeviceSynchronize());
+	ZZ temp;
 	for (int i=0; i<num; i++) {
 		conv(temp, x[i]);
 		temp += y[i];
@@ -109,6 +110,7 @@ bool _test_sub_modP(uint64 *z, uint64 *x, uint64 *y) {
 	_kernel_sub_modP<<<(num+1023)/1024, 1024>>>(z, x, y);
 	CCE();
 	CSC(cudaDeviceSynchronize());
+	ZZ temp;
 	for (int i=0; i<num; i++) {
 		conv(temp, x[i]);
 		temp -= y[i];
@@ -130,6 +132,7 @@ bool _test_mul_modP(uint64 *z, uint64 *x, uint64 *y) {
 	_kernel_mul_modP<<<(num+1023)/1024, 1024>>>(z, x, y);
 	CCE();
 	CSC(cudaDeviceSynchronize());
+	ZZ temp;
 	for (int i=0; i<num; i++) {
 		conv(temp, x[i]);
 		temp *= y[i];
@@ -151,6 +154,7 @@ bool _test_pow_modP(uint64 *z, uint64 *x, int *e) {
 	_kernel_pow_modP<<<(num+1023)/1024, 1024>>>(z, x, e);
 	CCE();
 	CSC(cudaDeviceSynchronize());
+	ZZ temp;
 	for (int i=0; i<num; i++) {
 		temp = PowerMod(to_ZZ(x[i]), e[i], P);
 		if (temp != to_ZZ(z[i])) {

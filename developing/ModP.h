@@ -25,6 +25,7 @@ SOFTWARE.
 // P = 2^64-2^32+1 = 0xffff ffff 0000 0001.
 // This file contains all modulo P arithmetic device inline code;
 // lays the foundation of fast NTT conversions or NTT domain operations.
+// Attention: error occurs when compiled inline
 
 #pragma once
 typedef	unsigned int uint32; // 32-bit unsigned integer
@@ -36,28 +37,39 @@ namespace cuHE {
 
 // All mod P arithmetic functions are declared below.
 // 96-bit integer mod P
-__device__ void _uint96_modP(uint32 *x);
+__noinline__ __device__
+void _uint96_modP(uint32 *x);
 // 128-bit integer mod P
-__device__ void _uint128_modP(uint32 *x);
+__noinline__ __device__
+void _uint128_modP(uint32 *x);
 // 160-bit integer mod P
-__device__ void _uint160_modP(uint32 *x);
+__noinline__ __device__
+void _uint160_modP(uint32 *x);
 // 192-bit integer mod P
-__device__ void _uint192_modP(uint32 *x);
+__noinline__ __device__
+void _uint192_modP(uint32 *x);
 // 224-bit integer mod P
-__device__ void _uint224_modP(uint32 *x);
+__noinline__ __device__
+void _uint224_modP(uint32 *x);
 // return x<<l mod P, l = [0,7]*[0,7]*3
-__device__ uint64 _ls_modP(uint64 x, int l);
+__noinline__ __device__
+uint64 _ls_modP(uint64 x, int l);
 // return x+y mod P
-__device__ uint64 _add_modP(uint64 x, uint64 y);
+__noinline__ __device__
+uint64 _add_modP(uint64 x, uint64 y);
 // return x-y mod P
-__device__ uint64 _sub_modP(uint64 x, uint64 y);
+__noinline__ __device__
+uint64 _sub_modP(uint64 x, uint64 y);
 // return x*y mod P
-__device__ uint64 _mul_modP(uint64 x, uint64 y);
+__noinline__ __device__
+uint64 _mul_modP(uint64 x, uint64 y);
 // return x^e mod P
-__device__ uint64 _pow_modP(uint64 x, int e);
+__noinline__ __device__
+uint64 _pow_modP(uint64 x, int e);
 
 // All mod P arithmetic functions are implemented below.
-__noinline__ __device__ void _uint96_modP(uint32 *x) {
+__noinline__ __device__
+void _uint96_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -72,7 +84,8 @@ __noinline__ __device__ void _uint96_modP(uint32 *x) {
 		(*t) -= valP;
 	}
 }
-__noinline__ __device__ void _uint128_modP(uint32 *x) {
+__noinline__ __device__
+void _uint128_modP(uint32 *x) {
 	register uint32 bit = 0;
 	asm("add.cc.u32 %0, %0, %1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0, 0, 0;" : "=r"(bit));
@@ -97,7 +110,8 @@ __noinline__ __device__ void _uint128_modP(uint32 *x) {
 		(*t) -= valP;
 	}
 }
-__noinline__ __device__ void _uint160_modP(uint32 *x) {
+__noinline__ __device__
+void _uint160_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -129,7 +143,8 @@ __noinline__ __device__ void _uint160_modP(uint32 *x) {
 		(*t) -= valP;
 	}
 }
-__noinline__ __device__ void _uint192_modP(uint32 *x) {
+__noinline__ __device__
+void _uint192_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -172,7 +187,8 @@ __noinline__ __device__ void _uint192_modP(uint32 *x) {
 		bit --;
 	}
 }
-__noinline__ __device__ void _uint224_modP(uint32 *x) {
+__noinline__ __device__
+void _uint224_modP(uint32 *x) {
 	register uint32 bit;
 	asm("add.cc.u32 %0,%0,%1;" : "+r"(x[1]) : "r"(x[2]));
 	asm("addc.u32 %0,%1,%2;" : "=r"(bit) : "r"(0), "r"(0));
@@ -218,7 +234,8 @@ __noinline__ __device__ void _uint224_modP(uint32 *x) {
 		bit--;
 	}
 }
-__noinline__ __device__ uint64 _ls_modP(uint64 x, int l) {
+__noinline__ __device__
+uint64 _ls_modP(uint64 x, int l) {
 	register uint64 ret, tx = x;
 	register uint32 buff[7];
 	switch(l){
@@ -303,7 +320,8 @@ __noinline__ __device__ uint64 _ls_modP(uint64 x, int l) {
 	}
 	return ret;
 }
-__noinline__ __device__ uint64 _add_modP(uint64 x, uint64 y) {
+__noinline__ __device__
+uint64 _add_modP(uint64 x, uint64 y) {
 	register uint64 ret;
 	ret = x+y;
 	if (ret < x) {
@@ -314,7 +332,8 @@ __noinline__ __device__ uint64 _add_modP(uint64 x, uint64 y) {
 	}
 	return ret;
 }
-__noinline__ __device__ uint64 _sub_modP(uint64 x, uint64 y) {
+__noinline__ __device__
+uint64 _sub_modP(uint64 x, uint64 y) {
 	register uint64 ret;
 	ret = x-y;
 	if (ret > x) {
@@ -322,7 +341,8 @@ __noinline__ __device__ uint64 _sub_modP(uint64 x, uint64 y) {
 	}
 	return ret;
 }
-__noinline__ __device__ uint64 _mul_modP(uint64 x, uint64 y) {
+__noinline__ __device__
+uint64 _mul_modP(uint64 x, uint64 y) {
 	register uint32 mul[4];
 	register uint32 a[2], b[2];
 	register uint32 temp[2];
@@ -352,7 +372,8 @@ __noinline__ __device__ uint64 _mul_modP(uint64 x, uint64 y) {
 	ret += mul[0];
 	return ret;
 }
-__noinline__ __device__ uint64 _pow_modP(uint64 x, int e) {
+__noinline__ __device__
+uint64 _pow_modP(uint64 x, int e) {
 	register uint64 ret = 1, tx = x;
 	while (e > 0) {
 		if (e&0x1 == 0x1) {
