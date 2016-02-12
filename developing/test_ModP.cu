@@ -31,15 +31,15 @@ SOFTWARE.
 #include <NTL/ZZ.h>
 NTL_CLIENT
 
-#define num 1//(1024*1024)
+#define num (1024*1024)
 const ZZ P = to_ZZ(0xffffffff00000001);
 ZZ temp;
 
 void rand_array(uint64 *ptr) {
 	for (int i=0; i<num; i++) {
 		ptr[i] = rand();
-//		ptr[i] <<= 32;
-//		ptr[i] |= rand();
+		ptr[i] <<= 32*(rand()%2);
+		ptr[i] |= rand();
 	}
 }
 void rand_offset(int *l) {
