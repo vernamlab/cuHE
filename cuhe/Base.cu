@@ -247,7 +247,7 @@ __global__ void icrt(uint32 *dst, uint32 *src, int pnum, int M_w32, int mi_w32, 
 
 /** ----- NTT kernels -----	*/
 // 4-point NTT
-__device__ __host__ __inline__
+__device__ __inline__
 void _ntt4(uint64 *x) {
 	register uint64 s[4], temp;
 	s[0] = _add_modP(x[0], x[2]);
@@ -262,7 +262,7 @@ void _ntt4(uint64 *x) {
 }
 
 // 8-point NTT with 0 paddings
-__device__ __host__ __inline__
+__device__ __inline__
 void _ntt8_ext(uint64 *x) {
 	register uint64 s[8], temp;
 	temp = _ls_modP(x[2], 48);
@@ -289,7 +289,7 @@ void _ntt8_ext(uint64 *x) {
 }
 
 // 8-point NTT
-__device__ __host__ __inline__
+__device__ __inline__
 void _ntt8(uint64 *x) {
 	register uint64 s[8], temp;
 	s[0] = _add_modP(x[0], x[4]);
