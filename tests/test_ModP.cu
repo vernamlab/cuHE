@@ -23,8 +23,9 @@ SOFTWARE.
 */
 
 // Test all inline device mod P = 2^64-2^32+1 operations.
+// "ModP.h" is correct only if all cases pass.
 
-#include "ModP.h"
+#include "../cuhe/ModP.h"
 #include "../cuhe/Debug.h"
 #include <time.h>
 #include <stdio.h>
@@ -39,7 +40,6 @@ void rand_array(uint64 *ptr) {
 		ptr[i] = rand();
 		ptr[i] <<= 32*(rand()%2);
 		ptr[i] |= rand();
-		//ptr[i] = 3;
 	}
 }
 void rand_offset(int *l) {
@@ -49,7 +49,7 @@ void rand_offset(int *l) {
 }
 void rand_exp(int *e) {
 	for (int i=0; i<num; i++) {
-		e[i] = 1;//(unsigned)rand()>>1;
+		e[i] = (unsigned)rand()>>1;
 		if (e[i] < 0) {
 			printf("Error: random exponent has opposite value.\n");
 			exit(-1);
