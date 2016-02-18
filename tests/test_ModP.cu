@@ -24,8 +24,8 @@ SOFTWARE.
 
 // Test all inline device mod P = 2^64-2^32+1 operations.
 
-#include "../cuHE/ModP.h"
-#include "../cuHE/Debug.h"
+#include "ModP.h"
+#include "../cuhe/Debug.h"
 #include <time.h>
 #include <stdio.h>
 #include <NTL/ZZ.h>
@@ -39,6 +39,7 @@ void rand_array(uint64 *ptr) {
 		ptr[i] = rand();
 		ptr[i] <<= 32*(rand()%2);
 		ptr[i] |= rand();
+		//ptr[i] = 3;
 	}
 }
 void rand_offset(int *l) {
