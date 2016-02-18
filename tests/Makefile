@@ -1,63 +1,64 @@
 #################################################
 #################################################
 ## Compilers
-CC	= gcc
-CX	= g++
-CU	= /usr/local/cuda/bin/nvcc
+CC = gcc
+CX = g++
+CU = /usr/local/cuda/bin/nvcc
 
 ## Flags
 FMACH	= -m64
 FOPTM	= -O2
-FC++11	= -std=c++11
-FOMP	= -fopenmp
+FC++11 = -std=c++11
+FOMP = -fopenmp
 # CUDA Flags
 FARCH	= -arch=compute_52
 FCODE	= -code=sm_52
-FPTX	= -code=compute_52
+FPTX = -code=compute_52
 CXFLAGS	= $(FMACH) $(FOPTM) $(FC++11)
 CUFLAGS	= $(FARCH) $(FCODE) $(FPTX)
 
 ## Libraries
 LCUDART	= --cudart static
 LMATH	= -lm
-LNTL	= -lntl
-LGMP	= -lgmp
-LOMP	= -lgomp
-LINKERS	= $(LCUDART) $(LMATH) $(LNTL) $(LGMP)
+LNTL = -lntl
+LGMP = -lgmp
+LOMP = -lgomp
+LINKERS = $(LCUDART) $(LMATH) $(LNTL) $(LGMP)
 
 # Commands
-COMPCC	= $(CC) $(CXFLAGS)
-COMPCX	= $(CX) $(CXFLAGS)
-COMPCU	= $(CU) $(CXFLAGS) $(CUFLAGS)
-LINKCC	= $(CC) $(CXFLAGS) $(LINKERS) -link -w
-LINKCX	= $(CX) $(CXFLAGS) $(LINKERS) -link -w
-LINKCU	= $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -link -w
+COMPCC = $(CC) $(CXFLAGS)
+COMPCX = $(CX) $(CXFLAGS)
+COMPCU = $(CU) $(CXFLAGS) $(CUFLAGS)
+LINKCC = $(CC) $(CXFLAGS) $(LINKERS) -w
+LINKCX = $(CX) $(CXFLAGS) $(LINKERS) -w
+LINKCU = $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -w
 
 #################################################
 #################################################
 ## Source Files
 SRCCC	=
 SRCCX	=
-SRCCU	= test_ModP.cu
-SRCS	= $(SRCCC) $(SRCCX) $(SRCCU)
+SRCCU	= DHS.cu\
+				simple_DHS.cu
+SRCS = $(SRCCC) $(SRCCX) $(SRCCU)
 
 ## Dependency Files
 DEPCC	= $(SRCCC:.c=.d)
 DEPCX	= $(SRCCX:.cpp=.d)
 DEPCU	= $(SRCCU:.cu=.d)
-DEPS	= $(DEPCC) $(DEPCX) $(DEPCU)
+DEPS = $(DEPCC) $(DEPCX) $(DEPCU)
 
 ## Object Files
 OBJCC	= $(SRCCC:.c=.o)
 OBJCX	= $(SRCCX:.cpp=.o)
 OBJCU	= $(SRCCU:.cu=.o)
-OBJS	= $(OBJCC) $(OBJCX) $(OBJCU)
+OBJS = $(OBJCC) $(OBJCX) $(OBJCU)
 
 ## Library Files
-LIBS	= ../cuhe/libcuHE.a
+LIBS = libcuHE.a
 
 ## Executable Targets
-TARS	= test_ModP
+TARS = 
 
 #################################################
 #################################################
