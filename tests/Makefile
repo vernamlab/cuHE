@@ -25,6 +25,10 @@ LGMP = -lgmp
 LOMP = -lgomp
 LINKERS = $(LCUDART) $(LMATH) $(LNTL) $(LGMP)
 
+
+## Library Files
+LIBS = ../cuhe/libcuHE.a
+
 # Commands
 COMPCC = $(CC) $(CXFLAGS)
 COMPCX = $(CX) $(CXFLAGS)
@@ -38,8 +42,7 @@ LINKCU = $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -w
 ## Source Files
 SRCCC	=
 SRCCX	=
-SRCCU	= DHS.cu\
-				simple_DHS.cu
+SRCCU	= test_ModP.cu
 SRCS = $(SRCCC) $(SRCCX) $(SRCCU)
 
 ## Dependency Files
@@ -54,11 +57,8 @@ OBJCX	= $(SRCCX:.cpp=.o)
 OBJCU	= $(SRCCU:.cu=.o)
 OBJS = $(OBJCC) $(OBJCX) $(OBJCU)
 
-## Library Files
-LIBS = libcuHE.a
-
 ## Executable Targets
-TARS = 
+TARS = test_ModP
 
 #################################################
 #################################################

@@ -25,6 +25,9 @@ LGMP = -lgmp
 LOMP = -lgomp
 LINKERS = $(LCUDART) $(LMATH) $(LNTL) $(LGMP)
 
+# Library Files
+LIBS = 
+
 # Commands
 COMPCC = $(CC) $(CXFLAGS)
 COMPCX = $(CX) $(CXFLAGS)
@@ -58,15 +61,12 @@ OBJCX	= $(SRCCX:.cpp=.o)
 OBJCU	= $(SRCCU:.cu=.o)
 OBJS = $(OBJCC) $(OBJCX) $(OBJCU)
 
-## Library Files
-LIBS = libcuHE.a
-
-## Executable Targets
-TARS = 
+## Build Targets
+TARS = libcuHE.a
 
 #################################################
 #################################################
-all: $(LIBS) $(TARS)
+all: $(TARS)
 
 libcuHE.a: $(OBJS)
 	ar -cvq libcuHE.a $(OBJS)
@@ -83,4 +83,4 @@ $(OBJCU): $(@:%.o=%.cu)
 
 # Other Targets
 clean:
-	rm $(DEPS) $(OBJS) $(TARS) $(LIBS)
+	rm $(DEPS) $(OBJS) $(TARS)
