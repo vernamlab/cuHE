@@ -30,12 +30,44 @@ SOFTWARE.
 #pragma once
 typedef	unsigned int uint32; // 32-bit unsigned integer
 typedef unsigned long int	uint64; // 64-bit unsigned integer
-#define valP 0xffffffff00000001
-#define uint32Max 0xffffffff
-#include <stdio.h>
+#define valP 0xffffffff00000001 // special prime number for NTT conversions
+#define uint32Max 0xffffffff // maximum value of 32-bit unsigned integer
 
 namespace cuHE {
-// All mod P arithmetic functions are implemented below.
+
+// All mod P arithmetci functions are declared below...
+// return ( x << l mod P ), where l has the form "3*{0~7}*{0~7}"
+__inline__ __device__
+uint64 _ls_modP(uint64 x, int l);
+// return ( x + y mod P )
+__inline__ __device__
+uint64 _add_modP(uint64 x, uint64 y);
+// return ( x - y mod P )
+__inline__ __device__
+uint64 _sub_modP(uint64 x, uint64 y);
+// return ( x * y mod P )
+__inline__ __device__
+uint64 _mul_modP(uint64 x, uint64 y);
+// return ( x ^ e mod P )
+__inline__ __device__
+uint64 _pow_modP(uint64 x, int e);
+// x[0~1] <-- x[0~2] mod P
+__inline__ __device__
+void _uint96_modP(uint32 *x);
+// x[0~1] <-- x[0~3] mod P
+__inline__ __device__
+void _uint128_modP(uint32 *x);
+// x[0~1] <-- x[0~4] mod P
+__inline__ __device__
+void _uint160_modP(uint32 *x);
+// x[0~1] <-- x[0~5] mod P
+__inline__ __device__
+void _uint192_modP(uint32 *x);
+// x[0~1] <-- x[0~6] mod P
+__inline__ __device__
+void _uint224_modP(uint32 *x);
+
+// All mod P arithmetic functions are implemented below...
 __inline__ __device__
 void _uint96_modP(uint32 *x) {
 	asm("{\n\t"
@@ -218,8 +250,8 @@ uint64 _sub_modP(uint64 x, uint64 y) {
 }
 __inline__ __device__
 uint64 _mul_modP(uint64 x, uint64 y) {
-	volatile register uint32 mul[4];
-	// 64-bit * 64-bit
+	volatile register uint32 mul[4]; // NEVER REMOVE VOLATILE HERE!!!
+	// 128-bit = 64-bit * 64-bit
 	asm("mul.lo.u32 %0, %4, %6;\n\t"
       "mul.hi.u32 %1, %4, %6;\n\t"
       "mul.lo.u32 %2, %5, %7;\n\t"
