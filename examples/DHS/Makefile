@@ -64,8 +64,8 @@ TARS =
 #################################################
 all: $(LIBS) $(TARS)
 
-simple_DHS: DHS.o ../../cuhe/libcuHE.a
-$(LINKCU) -o $@ DHS.o ../../cuhe/libcuHE.a
+simple_DHS: $(OBJS) ../../cuhe/libcuHE.a
+$(LINKCU) -o $@ $(OBJS) ../../cuhe/libcuHE.a
 
 $(OBJCC): $(@:%.o=%.c)
 	$(COMPCC) -M $(@:%.o=%.c) -o $(@:%.o=%.d)
