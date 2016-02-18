@@ -64,8 +64,8 @@ TARS = simple_DHS
 #################################################
 all: $(TARS)
 
-simple_DHS: (OBJS) $(LIBS)
-	$(LINKCU) -o $@ (OBJS) $(LIBS)
+simple_DHS: $(OBJS) $(LIBS)
+	$(LINKCU) -o $@ $(OBJS) $(LIBS)
 
 $(OBJCC): $(@:%.o=%.c)
 	$(COMPCC) -M $(@:%.o=%.c) -o $(@:%.o=%.d)
