@@ -169,16 +169,7 @@ void initCrt(ZZ* coeffModulus) {
 static uint64 **d_swap; // conversion buffer
 static uint32 **d_hold; // intt result buffer
 void initNtt() {
-	// twiddle factors
-	const ZZ P = to_ZZ(0xffffffff00000001);
-	const ZZ g = to_ZZ((uint64)15893793146607301539);
-	int e0 = 65536/param.nttLen;
-	ZZ w0 =	PowerMod(g, e0, P);
-	uint64 *h_roots = new uint64[param.nttLen];
-	for (int i=0; i<param.nttLen; i++)
-		conv(h_roots[i], PowerMod(w0, i, P));
-	preload_ntt(h_roots, param.nttLen);
-	delete [] h_roots;
+	preload_ntt(param.nttLen);
 	// temporary result allocation
 	d_swap = new uint64 *[numDevices()];
 	d_hold = new uint32 *[numDevices()];
