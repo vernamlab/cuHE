@@ -48,9 +48,6 @@ uint64 _sub_modP(uint64 x, uint64 y);
 // return ( x * y mod P )
 __inline__ __device__
 uint64 _mul_modP(uint64 x, uint64 y);
-// return ( x ^ e mod P )
-__inline__ __device__
-uint64 _pow_modP(uint64 x, int e);
 // x[0~1] <-- x[0~2] mod P
 __inline__ __device__
 void _uint96_modP(uint32 *x);
@@ -289,20 +286,6 @@ uint64 _mul_modP(uint64 x, uint64 y) {
 	if (*(uint64 *)mul > valP)
 		*(uint64 *)mul -= valP;
 	return *(uint64 *)mul;
-}
-__inline__ __device__
-uint64 _pow_modP(uint64 x, int e) {
-	register uint64 ret = 1, tx = x;
-	while (e > 0) {
-		if (e&0x1 == 0x1) {
-			ret = _mul_modP(ret, tx);
-		}
-		else {
-			tx = _mul_modP(tx, tx);
-		}
-		e >>= 1;
-	}
-	return ret;
 }
 
 } // namespace cuHE

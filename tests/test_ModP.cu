@@ -47,15 +47,6 @@ void rand_offset(int *l) {
 		l[i] = (rand()%8)*(rand()%8)*3;
 	}
 }
-void rand_exp(int *e) {
-	for (int i=0; i<num; i++) {
-		e[i] = (unsigned)rand()>>1;
-		if (e[i] < 0) {
-			printf("Error: random exponent has opposite value.\n");
-			exit(-1);
-		}
-	}
-}
 __global__ void _kernel_ls_modP(uint64 *dst, uint64 *src, int *offset) {
 	int idx = blockIdx.x*blockDim.x+threadIdx.x;
 	if (idx < num) {
@@ -144,26 +135,6 @@ bool _test_mul_modP(uint64 *z, uint64 *x, uint64 *y) {
 	}
 	return true;
 }
-__global__ void _kernel_pow_modP(uint64 *dst, uint64 *src, int *exp) {
-	int idx = blockIdx.x*blockDim.x+threadIdx.x;
-	if (idx < num) {
-		uint64 t = cuHE::_pow_modP(src[idx], exp[idx]);
-		dst[idx] = t;
-	}
-}
-bool _test_pow_modP(uint64 *z, uint64 *x, int *e) {
-	_kernel_pow_modP<<<(num+1023)/1024, 1024>>>(z, x, e);
-	CCE();
-	CSC(cudaDeviceSynchronize());
-	ZZ temp;
-	for (int i=0; i<num; i++) {
-		temp = PowerMod(to_ZZ(x[i]), e[i], P);
-		if (temp != to_ZZ(z[i])) {
-			return false;
-		}
-	}
-	return true;
-}
 void print(bool result) {
 	if (result)
 		printf("pass\n");
@@ -175,17 +146,14 @@ int main() {
 	uint64 *y;
 	uint64 *z;
 	int *l;
-	int *e;
 	CSC(cudaMallocManaged(&x, num*sizeof(uint64)));
 	CSC(cudaMallocManaged(&y, num*sizeof(uint64)));
 	CSC(cudaMallocManaged(&z, num*sizeof(uint64)));
 	CSC(cudaMallocManaged(&l, num*sizeof(int)));
-	CSC(cudaMallocManaged(&e, num*sizeof(int)));
 	srand(time(NULL));
 	rand_array(x);
 	rand_array(y);
 	rand_offset(l);
-	rand_exp(e);
 	printf("_ls_modP:\t");
 	print(_test_ls_modP(z, x, l));
 	printf("_add_modP:\t");
@@ -194,12 +162,9 @@ int main() {
 	print(_test_sub_modP(z, x, y));
 	printf("_mul_modP:\t");
 	print(_test_mul_modP(z, x, y));
-	printf("_pow_modP:\t");
-	print(_test_pow_modP(z, x, e));
 	CSC(cudaFree(x));
 	CSC(cudaFree(y));
 	CSC(cudaFree(z));
 	CSC(cudaFree(l));
-	CSC(cudaFree(e));
 	return 0;
 }
