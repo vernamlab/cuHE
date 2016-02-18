@@ -38,133 +38,161 @@ namespace cuHE {
 // All mod P arithmetic functions are implemented below.
 __inline__ __device__
 void _uint96_modP(uint32 *x) {
-	register uint32 bit = 0;
-	asm("add.cc.u32 %1, %1, %2;\n\t"
-			"addc.u32 %3, 0, 0;\n\t"
+	asm("{\n\t"
+			".reg .s32 b;\n\t"
+			".reg .pred p;\n\t"
+			"add.cc.u32 %1, %1, %2;\n\t"
+			"addc.s32 b, 0, 0;\n\t"
 			"sub.cc.u32 %0, %0, %2;\n\t"
 			"subc.cc.u32 %1, %1, 0;\n\t"
-			"subc.u32 %3, %3, 0;\n\t"
-			: "+r"(x[0]), "+r"(x[1]), "+r"(x[2]), "+r"(bit));
-	if (bit == 0x1)
-		*(uint64 *)x += uint32Max;
+			"subc.s32 b, b, 0;\n\t"
+			"setp.eq.s32 p, b, 1;\n\t"
+			"@p add.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p addc.u32 %1, %1, 0;\n\t"
+			"}"
+			: "+r"(x[0]), "+r"(x[1])
+			: "r"(x[2]));
 }
 __inline__ __device__
 void _uint128_modP(uint32 *x) {
-	register uint32 bit = 0;
 	_uint96_modP(x);
-	asm("sub.cc.u32 %0, %0, %3;\n\t"
+	asm("{\n\t"
+			".reg .s32 b;\n\t"
+			".reg .pred p;\n\t"
+			"sub.cc.u32 %0, %0, %2;\n\t"
 	  	"subc.cc.u32 %1, %1, 0;\n\t"
-	  	"subc.u32 %2, 0, 0;\n\t"
-	  	: "+r"(x[0]), "+r"(x[1]), "=r"(bit)
+	  	"subc.u32 b, 0, 0;\n\t"
+			"setp.eq.s32 p, b, -1;\n\t"
+			"@p sub.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p subc.u32 %1, %1, 0;\n\t"
+			"}"
+	  	: "+r"(x[0]), "+r"(x[1])
 	  	: "r"(x[3]));
-	if (bit == uint32Max)
-		*(uint64 *)x -= uint32Max;
 }
 __inline__ __device__
 void _uint160_modP(uint32 *x) {
-	register uint32 bit = 0;
 	_uint128_modP(x);
-	asm("sub.cc.u32 %0, %0, %1;\n\t"
-			"subc.u32 %2, 0, 0;\n\t"
-			: "+r"(x[1]), "+r"(x[4]), "=r"(bit));
-	if (bit == uint32Max)
-		*(uint64 *)x -= uint32Max;
+	asm("{\n\t"
+			".reg .s32 b;\n\t"
+	  	".reg .pred p;\n\t"
+			"sub.cc.u32 %1, %1, %2;\n\t"
+			"subc.u32 b, 0, 0;\n\t"
+			"setp.eq.s32 p, b, -1;\n\t"
+			"@p sub.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p subc.u32 %1, %1, 0;\n\t"
+			"}"
+	  	: "+r"(x[0]), "+r"(x[1])
+	  	: "r"(x[4]));
 }
 __inline__ __device__
 void _uint192_modP(uint32 *x) {
-	register uint32 bit = 0;
 	_uint160_modP(x);
-	asm("add.cc.u32 %0, %0, %3;\n\t"
+	asm("{\n\t"
+			".reg .s32 b;\n\t"
+			".reg .pred p;\n\t"
+			"add.cc.u32 %0, %0, %2;\n\t"
 			"addc.cc.u32 %1, %1, 0;\n\t"
-			"addc.u32 %2, 0, 0;\n\t"
-			"sub.cc.u32 %1, %1, %3;\n\t"
-			"subc.u32 %2, %2, 0;\n\t"
-			: "+r"(x[0]), "+r"(x[1]), "=r"(bit)
+			"addc.u32 b, 0, 0;\n\t"
+			"sub.cc.u32 %1, %1, %2;\n\t"
+			"subc.u32 b, b, 0;\n\t"
+			"setp.eq.s32 p, b, -1;\n\t"
+			"@p sub.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p subc.u32 %1, %1, 0;\n\t"
+			"}"
+			: "+r"(x[0]), "+r"(x[1])
 			: "r"(x[5]));
-	if (bit == uint32Max)
-		*(uint64 *)x -= uint32Max;
 }
 __inline__ __device__
 void _uint224_modP(uint32 *x) {
-	register uint32 bit = 0;
 	_uint192_modP(x);
-	asm("add.cc.u32 %0, %0, %3;\n\t"
+	asm("{\n\t"
+			".reg .s32 b;\n\t"
+			".reg .pred p;\n\t"
+			"add.cc.u32 %0, %0, %2;\n\t"
 			"addc.cc.u32 %1, %1, 0;\n\t"
-			"addc.u32 %2, 0, 0;\n\t"
-			: "+r"(x[0]), "+r"(x[1]), "=r"(bit)
+			"addc.u32 b, 0, 0;\n\t"
+			"setp.eq.s32 p, b, 1;\n\t"
+			"@p add.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p addc.u32 %1, %1, 0;\n\t"
+			"}"
+			: "+r"(x[0]), "+r"(x[1])
 			: "r"(x[6]));
-	if (bit == 0x1)
-		*(uint64 *)x += uint32Max;
 }
 __inline__ __device__
 uint64 _ls_modP(uint64 x, int l) {
 	register uint64 tx = x;
 	register uint32 buff[7];
 	switch(l){
-	case (0):	// 2 words
-		buff[0] = (uint32)tx;
-		buff[1] = (uint32)(tx>>32);
-		break;
-	case (3):
-	case (6):
-	case (9):
-	case (12):
-	case (15):
-	case (18):
-	case (21):
-	case (24):
-	case (27):
-	case (30):	// 3 words
-		buff[2] = (uint32)(tx>>(64-l));
-		buff[1] = (uint32)(tx>>(32-l));
-		buff[0] = (uint32)(tx<<l);
-		_uint96_modP(buff);
-		break;
-	case (36):
-	case (42):
-	case (45):
-	case (48):
-	case (54):
-	case (60):
-	case (63):	// 4 words
-		buff[3] = (uint32)(tx>>(96-l));
-		buff[2] = (uint32)(tx>>(64-l));
-		buff[1] = (uint32)(tx<<(l-32));
-		buff[0] = 0;
-		_uint128_modP(buff);
-		break;
-	case (72):
-	case (75):
-	case (84):
-	case (90):	// 5 words
-		buff[4] = (uint32)(tx>>(128-l));
-		buff[3] = (uint32)(tx>>(96-l));
-		buff[2] = (uint32)(tx<<(l-64));
-		buff[1] = 0;
-		buff[0] = 0;
-		_uint160_modP(buff);
-		break;
-	case (105):
-	case (108):
-	case (126):	// 6 words
-		buff[5] = (uint32)(tx>>(160-l));
-		buff[4] = (uint32)(tx>>(128-l));
-		buff[3] = (uint32)(tx<<(l-96));
-		buff[2] = 0;
-		buff[1] = 0;
-		buff[0] = 0;
-		_uint192_modP(buff);
-		break;
-	case (147):	// 7 words
-		buff[6] = (uint32)(tx>>(192-l));
-		buff[5] = (uint32)(tx>>(160-l));
-		buff[4] = (uint32)(tx<<(l-128));
-		buff[3] = 0;
-		buff[2] = 0;
-		buff[1] = 0;
-		buff[0] = 0;
-		_uint224_modP(buff);
-		break;
+		// 2 words
+		case (0):
+			buff[0] = (uint32)tx;
+			buff[1] = (uint32)(tx>>32);
+			break;
+		// 3 words
+		case (3):
+		case (6):
+		case (9):
+		case (12):
+		case (15):
+		case (18):
+		case (21):
+		case (24):
+		case (27):
+		case (30):
+			buff[2] = (uint32)(tx>>(64-l));
+			buff[1] = (uint32)(tx>>(32-l));
+			buff[0] = (uint32)(tx<<l);
+			_uint96_modP(buff);
+			break;
+		// 4 words
+		case (36):
+		case (42):
+		case (45):
+		case (48):
+		case (54):
+		case (60):
+		case (63):
+			buff[3] = (uint32)(tx>>(96-l));
+			buff[2] = (uint32)(tx>>(64-l));
+			buff[1] = (uint32)(tx<<(l-32));
+			buff[0] = 0;
+			_uint128_modP(buff);
+			break;
+		// 5 words
+		case (72):
+		case (75):
+		case (84):
+		case (90):
+			buff[4] = (uint32)(tx>>(128-l));
+			buff[3] = (uint32)(tx>>(96-l));
+			buff[2] = (uint32)(tx<<(l-64));
+			buff[1] = 0;
+			buff[0] = 0;
+			_uint160_modP(buff);
+			break;
+		// 6 words
+		case (105):
+		case (108):
+		case (126):
+			buff[5] = (uint32)(tx>>(160-l));
+			buff[4] = (uint32)(tx>>(128-l));
+			buff[3] = (uint32)(tx<<(l-96));
+			buff[2] = 0;
+			buff[1] = 0;
+			buff[0] = 0;
+			_uint192_modP(buff);
+			break;
+		// 7 words
+		case (147):
+			buff[6] = (uint32)(tx>>(192-l));
+			buff[5] = (uint32)(tx>>(160-l));
+			buff[4] = (uint32)(tx<<(l-128));
+			buff[3] = 0;
+			buff[2] = 0;
+			buff[1] = 0;
+			buff[0] = 0;
+			_uint224_modP(buff);
+			break;
 	}
 	if (*(uint64 *)buff > valP)
 		*(uint64 *)buff -= valP;
@@ -190,10 +218,9 @@ uint64 _sub_modP(uint64 x, uint64 y) {
 }
 __inline__ __device__
 uint64 _mul_modP(uint64 x, uint64 y) {
-	register uint32 mul[4];
+	volatile register uint32 mul[4];
 	// 64-bit * 64-bit
-	asm("{\n\t"
-      "mul.lo.u32 %0, %4, %6;\n\t"
+	asm("mul.lo.u32 %0, %4, %6;\n\t"
       "mul.hi.u32 %1, %4, %6;\n\t"
       "mul.lo.u32 %2, %5, %7;\n\t"
       "mul.hi.u32 %3, %5, %7;\n\t"
@@ -203,11 +230,30 @@ uint64 _mul_modP(uint64 x, uint64 y) {
       "mad.lo.cc.u32 %1, %5, %6, %1;\n\t"
       "madc.hi.cc.u32 %2, %5, %6, %2;\n\t"
       "addc.u32 %3, %3, 0;\n\t"
-      "}"
-      : "=r"(mul[0]), "=r"(mul[1]), "=r"(mul[2]), "=r"(mul[3])
+      : "+r"(mul[0]), "+r"(mul[1]), "+r"(mul[2]), "+r"(mul[3])
       : "r"(((uint32 *)&x)[0]), "r"(((uint32 *)&x)[1]),
         "r"(((uint32 *)&y)[0]), "r"(((uint32 *)&y)[1]));
-	_uint128_modP(mul); // 128-bit mod P
+	// 128-bit mod P
+	asm("{\n\t"
+   		".reg .s32 b;\n\t"
+			".reg .pred p;\n\t"
+			"add.cc.u32 %1, %1, %2;\n\t"
+			"addc.s32 b, 0, 0;\n\t"
+			"sub.cc.u32 %0, %0, %2;\n\t"
+			"subc.cc.u32 %1, %1, 0;\n\t"
+			"subc.s32 b, b, 0;\n\t"
+			"setp.eq.s32 p, b, 1;\n\t"
+			"@p add.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p addc.cc.u32 %1, %1, 0;\n\t"
+			"sub.cc.u32 %0, %0, %3;\n\t"
+	  	"subc.cc.u32 %1, %1, 0;\n\t"
+	  	"subc.u32 b, 0, 0;\n\t"
+			"setp.eq.s32 p, b, -1;\n\t"
+			"@p sub.cc.u32 %0, %0, 0xffffffff;\n\t"
+			"@p subc.u32 %1, %1, 0;\n\t"
+      "}"
+      : "+r"(mul[0]), "+r"(mul[1])
+      : "r"(mul[2]), "r"(mul[3]));
 	if (*(uint64 *)mul > valP)
 		*(uint64 *)mul -= valP;
 	return *(uint64 *)mul;
