@@ -39,12 +39,11 @@ LINKCU	= $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -w
 SRCCC	=
 SRCCX	=
 SRCCU	= Parameters.cu\
-		  DeviceManager.cu\
-		  Base.cu\
-		  CuHE.cu\
-		  Operations.cu\
-		  Relinearization.cu
-
+		  	DeviceManager.cu\
+		  	Base.cu\
+		  	CuHE.cu\
+		  	Operations.cu\
+		  	Relinearization.cu
 SRCS	= $(SRCCC) $(SRCCX) $(SRCCU)
 
 ## Dependency Files
@@ -63,7 +62,7 @@ OBJS	= $(OBJCC) $(OBJCX) $(OBJCU)
 LIBS	= libcuHE.a
 
 ## Executable Targets
-TARS	=
+TARS	= 
 
 #################################################
 #################################################
