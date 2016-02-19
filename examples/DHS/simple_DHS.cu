@@ -31,7 +31,6 @@ int main() {
 
 	ZZX z;
 	dhs->decrypt(z, cuz.zRep(), 1);
-	cuz.~CuCtxt();
 	dhs->batcher->decode(z, z);
 
 	ZZX chk;

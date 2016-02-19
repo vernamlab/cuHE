@@ -222,14 +222,12 @@ void setPolyModulus(ZZX m) {
 	c.x2c();
 	preload_barrett_m_c(c.cRep(), param.numCrtPrime*param.crtLen*sizeof(uint32));
 	c.x2n();
-	preload_barrett_m_n(c.nRep(), param.numCrtPrime*param.nttLen*sizeof(uint64));
-	c.~CuCtxt();	
+	preload_barrett_m_n(c.nRep(), param.numCrtPrime*param.nttLen*sizeof(uint64));	
 	// prep u
 	CuCtxt cc;
 	cc.setLevel(0, 0, zu);
 	cc.x2n();
 	preload_barrett_u_n(cc.nRep(), param.numCrtPrime*param.nttLen*sizeof(uint64));
-	cc.~CuCtxt();
 };
 void initBarrett(ZZX m) {
 	setPolyModulus(m);
