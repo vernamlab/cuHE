@@ -261,8 +261,6 @@ void mulZZX(ZZX& out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
 	cAnd(cin0, cin0, cin1, st);
 	cin0.x2z(st);
 	out = cin0.zRep();
-	cin0.~CuCtxt();
-	cin1.~CuCtxt();
 }
 ///////////////////////////////////////////////////////////////////////////////
 //// @class CuPolynomial //////////////////////////////////////////////////////

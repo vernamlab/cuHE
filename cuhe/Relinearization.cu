@@ -55,7 +55,6 @@ void initRelin(ZZX* evalkey) {
 		for (int j=0; j<param.numCrtPrime; j++)
 			CSC(cudaMemcpy(h_ek[j]+i*param.nttLen, ek.nRep()+j*param.nttLen,
 					param.nttLen*sizeof(uint64), cudaMemcpyDeviceToHost));
-		ek.~CuCtxt();
 	}
 
 	d_relin = new uint64* [numDevices()];
