@@ -36,7 +36,7 @@ Compile
 options to cmake command defaults are:
 
 	-DGPU_ARCH:STRING=50
-	-DGCC_CUDA_VERISON=4.9
+	-DGCC_CUDA_VERISON:STRING=4.9
 
 
 A Short Tutorial
