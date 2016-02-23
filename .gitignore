@@ -41,3 +41,13 @@ Thumbs.db
 #################
 cuhe/libcuHE.a
 examples/DHS/simple_DHS
+
+# CMake #
+#########
+
+CMakeFiles
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+
+cuhe/*.d

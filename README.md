@@ -26,6 +26,19 @@ System Requirements
 2. [NTL][8]: A Library for doing Number Theory 9.3.0 (requires C++11)
 3. The [OpenMP][9] API
 
+Compile
+-------
+
+	cd cuhe
+	cmake ./
+	make
+
+options to cmake command defaults are:
+
+	-DGPU_ARCH:STRING=50
+	-DGCC_CUDA_VERISON:STRING=4.9
+
+
 A Short Tutorial
 ----------------
 To design/implement a homomorphic application/circuit, e.x. the AND of 8 bits. First of all, we need to decide which homomorphic encryption scheme to adopt and set parameters (polynomial ring degree, coefficient sizes in each level of circuit, relinearization strategy) according to some noise analysis process. Let's say we decide to adopt the DHS HE scheme.
