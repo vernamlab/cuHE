@@ -11,9 +11,9 @@ FOPTM	= -O2
 FC++11 = -std=c++11
 FOMP = -fopenmp
 # CUDA Flags
-FARCH	= -arch=compute_52
-FCODE	= -code=sm_52
-FPTX = -code=compute_52
+FARCH	= -arch=compute_50
+FCODE	= -code=sm_50
+FPTX = -code=compute_50
 CXFLAGS	= $(FMACH) $(FOPTM) $(FC++11)
 CUFLAGS	= $(FARCH) $(FCODE) $(FPTX)
 
