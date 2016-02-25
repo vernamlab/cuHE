@@ -1,25 +1,26 @@
-/* 
- *	The MIT License (MIT)
- *	Copyright (c) 2013-2015 Wei Dai
- *
- *	Permission is hereby granted, free of charge, to any person obtaining a copy
- *	of this software and associated documentation files (the "Software"), to deal
- *	in the Software without restriction, including without limitation the rights
- *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *	copies of the Software, and to permit persons to whom the Software is
- *	furnished to do so, subject to the following conditions:
- *
- *	The above copyright notice and this permission notice shall be included in
- *	all copies or substantial portions of the Software.
- *
- *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *	THE SOFTWARE.
- */
+/*
+The MIT License (MIT)
+
+Copyright (c) 2015 Wei Dai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #include "Base.h"
 #include "DeviceManager.h"
@@ -840,8 +841,7 @@ __global__ void intt_3_64k_modcrt(uint32 *dst, uint64 *src, int crtidx) {
 			(uint32)(_mul_modP(s8[i], 18446462594437939201)%const_p[crtidx]);
 }
 
-/** ----- CRT kernels -----	*/
-/**	crt kernels	*/
+// CRT kernels
 __device__ __inline__
 bool leq_M(unsigned int *x, int M_w32) {	// less or equal than M ?
 	if (x[M_w32] > 0)
@@ -854,8 +854,8 @@ bool leq_M(unsigned int *x, int M_w32) {	// less or equal than M ?
 	}
 	return true;
 }
-
-__global__ void crt(uint32 *dst, uint32 *src, int pnum, int w32, int mlen, int clen) {
+__global__ void crt(uint32 *dst, uint32 *src, int pnum, int w32, int mlen,
+    int clen) {
 	register int idx = bidx*bdimx+tidx;
 	extern __shared__ uint32 buff[];
 	uint32 *in = buff;
@@ -877,8 +877,8 @@ __global__ void crt(uint32 *dst, uint32 *src, int pnum, int w32, int mlen, int c
 		}
 	}
 }
-
-__global__ void icrt(uint32 *dst, uint32 *src, int pnum, int M_w32, int mi_w32, int mlen, int clen) {
+__global__ void icrt(uint32 *dst, uint32 *src, int pnum, int M_w32, int mi_w32,
+    int mlen, int clen) {
 	int idx = bidx*bdimx+tidx;
 	if (idx < mlen) {
 		register uint32 sum[maxNumPrimes+1];
@@ -892,16 +892,20 @@ __global__ void icrt(uint32 *dst, uint32 *src, int pnum, int M_w32, int mi_w32, 
 			tar *= const_bi[crt];
 			tt = (uint32)(tar%const_p[crt]);
 			// low
-			asm("mad.lo.cc.u32 %0,%1,%2,%3;" : "=r"(sum[0]) : "r"(tt), "r"(const_mi[crt*mi_w32+0]), "r"(sum[0]));
+			asm("mad.lo.cc.u32 %0,%1,%2,%3;" : "=r"(sum[0]) : "r"(tt),
+          "r"(const_mi[crt*mi_w32+0]), "r"(sum[0]));
 			for (int i=1; i<mi_w32; i++)
-				asm("madc.lo.cc.u32 %0,%1,%2,%3;" : "=r"(sum[i]) : "r"(tt), "r"(const_mi[crt*mi_w32+i]), "r"(sum[i]));
+				asm("madc.lo.cc.u32 %0,%1,%2,%3;" : "=r"(sum[i]) : "r"(tt),
+            "r"(const_mi[crt*mi_w32+i]), "r"(sum[i]));
 			for (int i=mi_w32; i<M_w32; i++)
 				asm("addc.cc.u32 %0,%0,%1;" : "+r"(sum[i]) : "r"(0));
 			asm("addc.u32 %0,%0,%1;" : "+r"(sum[M_w32]) : "r"(0));
 			// high
-			asm("mad.hi.cc.u32 %0,%1,%2,%3;" : "=r"(sum[1]) : "r"(tt), "r"(const_mi[crt*mi_w32+0]), "r"(sum[1]));
+			asm("mad.hi.cc.u32 %0,%1,%2,%3;" : "=r"(sum[1]) : "r"(tt),
+          "r"(const_mi[crt*mi_w32+0]), "r"(sum[1]));
 			for (int i=1; i<mi_w32; i++)
-				asm("madc.hi.cc.u32 %0,%1,%2,%3;" : "=r"(sum[i+1]) : "r"(tt), "r"(const_mi[crt*mi_w32+i]), "r"(sum[i+1]));
+				asm("madc.hi.cc.u32 %0,%1,%2,%3;" : "=r"(sum[i+1]) : "r"(tt),
+            "r"(const_mi[crt*mi_w32+i]), "r"(sum[i+1]));
 			for (int i=mi_w32; i<M_w32-1; i++)
 				asm("addc.cc.u32 %0,%0,%1;" : "+r"(sum[i+1]) : "r"(0));
 			asm("addc.u32 %0,%0,%1;" : "+r"(sum[M_w32]) : "r"(0));
@@ -913,22 +917,17 @@ __global__ void icrt(uint32 *dst, uint32 *src, int pnum, int M_w32, int mi_w32, 
 				asm("subc.u32 %0,%0,%1;" : "+r"(sum[M_w32]) : "r"(0));
 			}
 		}
-		for (int i=0; i<M_w32; i++) {
+		for (int i=0; i<M_w32; i++)
 			dst[bidx*M_w32*bdimx+tidx*M_w32+i] = sum[i];
-		}
 		// not coalesced???
 	}
 }
-/* end CRT kernels	*/
 
-
-
-
-/** ----- Barrett kernels -----	*/
+// Barrett Reduction kernels
 __global__ void barrett_mul_un(uint64 *tar, int pnum, int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 a, b, offset = 0;
-	for(int crt=0; crt<pnum; crt++){
+	for (int crt=0; crt<pnum; crt++) {
 		a = tar[offset+idx];
 		b = tex1Dfetch(tex_u_ntt, offset*2+idx*2+1);
 		b <<= 32;
@@ -937,11 +936,10 @@ __global__ void barrett_mul_un(uint64 *tar, int pnum, int nlen) {
 		offset += nlen;
 	}
 }
-
 __global__ void barrett_mul_mn(uint64 *tar, int pnum, int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 a, b, offset = 0;
-	for(int crt=0; crt<pnum; crt++){
+	for (int crt=0; crt<pnum; crt++) {
 		a = tar[offset+idx];
 		b = tex1Dfetch(tex_m_ntt, offset*2+idx*2+1);
 		b <<= 32;
@@ -950,8 +948,8 @@ __global__ void barrett_mul_mn(uint64 *tar, int pnum, int nlen) {
 		offset += nlen;
 	}
 }
-
-__global__ void barrett_sub_1(uint32 *y, uint32 *x, int pnum, int mlen, int nlen) {
+__global__ void barrett_sub_1(uint32 *y, uint32 *x, int pnum, int mlen,
+    int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint32 a, b;
 	if (idx < mlen) {
@@ -965,7 +963,6 @@ __global__ void barrett_sub_1(uint32 *y, uint32 *x, int pnum, int mlen, int nlen
 		}
 	}
 }
-
 __global__ void barrett_sub_2(uint32 *y, uint32 *x, int pnum, int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint32 a, b;
@@ -978,8 +975,8 @@ __global__ void barrett_sub_2(uint32 *y, uint32 *x, int pnum, int nlen) {
 		y[crt*nlen+idx] = a;
 	}
 }
-
-__global__ void barrett_sub_mc(uint32 *x, int pnum, int mlen, int clen, int nlen) {
+__global__ void barrett_sub_mc(uint32 *x, int pnum, int mlen, int clen,
+    int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint32 d, s;
 	extern __shared__ uint32 t[];
@@ -1002,11 +999,11 @@ __global__ void barrett_sub_mc(uint32 *x, int pnum, int mlen, int clen, int nlen
 		}
 	}
 }
-/* end Barrett kernels	*/
 
-/** ----- Relinearization kernels -----	*/
+// Relinearization kernels
 // ek[knum][pnum][NTTLEN]
-__global__ void relinMulAddAll(uint64 *dst, uint64 *c, uint64 *ek, int pnum, int knum, int nlen) {
+__global__ void relinMulAddAll(uint64 *dst, uint64 *c, uint64 *ek, int pnum,
+    int knum, int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	extern __shared__ uint64 cbuff[];	// cache c[knum*bdimx]
 	for (int i=0; i<knum; i++)
@@ -1023,9 +1020,9 @@ __global__ void relinMulAddAll(uint64 *dst, uint64 *c, uint64 *ek, int pnum, int
 		dst[i*nlen+idx] = sum;
 	}
 }
-
 // pnum * ek[knum][NTTLEN]
-__global__ void relinMulAddPerCrt(uint64 *dst, uint64 *c, uint64 *ek, int knum, int nlen) {
+__global__ void relinMulAddPerCrt(uint64 *dst, uint64 *c, uint64 *ek, int knum,
+    int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 sum = 0, offset = 0;
 	for (int i=0; i<knum; i++) {
@@ -1034,10 +1031,8 @@ __global__ void relinMulAddPerCrt(uint64 *dst, uint64 *c, uint64 *ek, int knum, 
 	}
 	dst[idx] = sum;
 }
-/* end Relinearization kernels	*/
 
-
-/** Operations	*/
+// NTT domain arithmetic
 __global__ void ntt_mul(uint64 *z, uint64 *x, uint64 *y, int pnum, int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 a, b, offset = 0;
@@ -1048,7 +1043,6 @@ __global__ void ntt_mul(uint64 *z, uint64 *x, uint64 *y, int pnum, int nlen) {
 		offset += nlen;
 	}
 }
-
 __global__ void ntt_add(uint64 *z, uint64 *x, uint64 *y, int pnum, int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 a, b, offset = 0;
@@ -1059,8 +1053,8 @@ __global__ void ntt_add(uint64 *z, uint64 *x, uint64 *y, int pnum, int nlen) {
 		offset += nlen;
 	}
 }
-
-__global__ void ntt_mul_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum, int nlen) {
+__global__ void ntt_mul_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum,
+    int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 a, b = scalar[idx], offset = 0;
 	for (int crt=0; crt<pnum; crt++) {
@@ -1069,8 +1063,8 @@ __global__ void ntt_mul_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum, int 
 		offset += nlen;
 	}
 }
-
-__global__ void ntt_add_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum, int nlen) {
+__global__ void ntt_add_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum,
+    int nlen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint64 a, b = scalar[idx], offset = 0;
 	for (int crt=0; crt<pnum; crt++) {
@@ -1080,6 +1074,7 @@ __global__ void ntt_add_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum, int 
 	}
 }
 
+// CRT domain arithmetic
 __global__ void crt_mul_int(uint32 *y, uint32 *x, int a, int pnum, int clen) {
 	register int idx = bidx*bdimx+tidx;
 	if (idx < pnum) {
@@ -1090,22 +1085,21 @@ __global__ void crt_mul_int(uint32 *y, uint32 *x, int a, int pnum, int clen) {
 		y[idx*clen] = temp;
 	}
 }
-
-__global__ void crt_add(uint32 *x, uint32 *a, uint32 *b, int pnum, int mlen, int clen) {
+__global__ void crt_add(uint32 *x, uint32 *a, uint32 *b, int pnum, int mlen,
+    int clen) {
 	register int idx = bidx*bdimx+tidx;
 	if (idx < mlen) {
 		for (int i=0; i<pnum; i++)
 			x[i*clen+idx] = (a[i*clen+idx]+b[i*clen+idx])%const_p[i];
 	}
 }
-
 __global__ void crt_add_int(uint32 *y, uint32 *x, int a, int pnum, int clen) {
 	register int idx = bidx*bdimx+tidx;
 	if (idx < pnum)
 		y[idx*clen] = (x[idx*clen]+(a%const_p[idx]))%const_p[idx];
 }
-
-__global__ void crt_add_nx1(uint32 *x, uint32 *a, uint32 *scalar, int pnum, int mlen, int clen) {
+__global__ void crt_add_nx1(uint32 *x, uint32 *a, uint32 *scalar, int pnum,
+    int mlen, int clen) {
 	register int idx = bidx*bdimx+tidx;
 	register uint32 b = scalar[idx];
 	if (idx < mlen) {
@@ -1114,7 +1108,9 @@ __global__ void crt_add_nx1(uint32 *x, uint32 *a, uint32 *scalar, int pnum, int 
 	}
 }
 
-__global__ void modswitch(uint32 *dst, uint32 *src, int pnum, int mlen, int clen, int modmsg) {
+// Modulus Switching
+__global__ void modswitch(uint32 *dst, uint32 *src, int pnum, int mlen,
+    int clen, int modmsg) {
 	register int idx = bidx*bdimx+tidx;
 	if (idx < mlen) {
 		register int dirty = src[(pnum-1)*clen+idx];
@@ -1141,4 +1137,4 @@ __global__ void modswitch(uint32 *dst, uint32 *src, int pnum, int mlen, int clen
 	}
 }
 
-} // end cuHE
+} // namespace cuHE
