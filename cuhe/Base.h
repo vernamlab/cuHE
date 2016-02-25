@@ -60,6 +60,7 @@ void load_icrt_M(uint32* src, int words, int dev, cudaStream_t st = 0);
 void load_icrt_mi(uint32* src, int words, int dev, cudaStream_t st = 0);
 // copy all generated CRT prime numbers to device constant memory
 void load_icrt_bi(uint32* src, int words, int dev, cudaStream_t st = 0);
+
 // copy all generated CRT prime numbers to device constant memory
 void preload_barrett_u_n(uint64* src, size_t size);
 // copy and bind ntt(crt(x^(2n-1)/m))
@@ -71,6 +72,7 @@ void preload_barrett_m_c(uint32* src, size_t size);
 /////////////////////////////////////////////////////////////////////
 //// CUDA Kernel Functions That Require Pre-computed Device Data ////
 /////////////////////////////////////////////////////////////////////
+
 // NTT kernels with size: 16384, 32768 or 65536.
 // Each NTT/invrese-NTT conversion consists of 3 kernels:
 //   - NTT:
@@ -121,13 +123,15 @@ __global__ void barrett_sub_1(uint32 *y, uint32 *x, int pnum, int mlen,
 __global__ void barrett_sub_2(uint32 *y, uint32 *x, int pnum, int nlen);
 __global__ void barrett_sub_mc(uint32 *x, int pnum, int mlen, int clen,
     int nlen);
-// Relinearization kernels: offer two modes
+
+// Relinearization kernels: offer two modes:
 // Large device memory & small key size: ek[knum][pnum][NTTLEN]
 __global__ void relinMulAddAll(uint64 *dst, uint64 *c, uint64 *ek, int pnum,
     int knum, int nlen);
 // Small device memory & large key size: pnum * ek[knum][NTTLEN]
 __global__ void relinMulAddPerCrt(uint64 *dst, uint64 *c, uint64 *ek, int knum,
     int nlen);
+
 // NTT domain arithmetic
 __global__ void ntt_mul(uint64 *z, uint64 *x, uint64 *y, int pnum, int nlen);
 __global__ void ntt_add(uint64 *z, uint64 *x, uint64 *y, int pnum, int nlen);
@@ -135,6 +139,7 @@ __global__ void ntt_mul_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum,
     int nlen);
 __global__ void ntt_add_nx1(uint64 *z, uint64 *x, uint64 *scalar, int pnum,
     int nlen);
+
 // CRT domain arithmetic
 __global__ void crt_mul_int(uint32 *y, uint32 *x, int a, int pnum, int clen);
 __global__ void crt_add(uint32 *x, uint32 *a, uint32 *b, int pnum, int mlen,
@@ -142,8 +147,9 @@ __global__ void crt_add(uint32 *x, uint32 *a, uint32 *b, int pnum, int mlen,
 __global__ void crt_add_int(uint32 *y, uint32 *x, int a, int pnum, int clen);
 __global__ void crt_add_nx1(uint32 *y, uint32 *x, uint32 *scalar, int pnum,
     int mlen, int clen);
+
 // Modulus Switching
 __global__ void modswitch(uint32 *dst, uint32 *src, int pnum, int mlen,
     int clen, int modmsg);
 
-} // end cuHE
+} // namespace cuHE
