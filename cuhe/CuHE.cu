@@ -1,25 +1,26 @@
-/* 
- *	The MIT License (MIT)
- *	Copyright (c) 2013-2015 Wei Dai
- *
- *	Permission is hereby granted, free of charge, to any person obtaining a copy
- *	of this software and associated documentation files (the "Software"), to deal
- *	in the Software without restriction, including without limitation the rights
- *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *	copies of the Software, and to permit persons to whom the Software is
- *	furnished to do so, subject to the following conditions:
- *
- *	The above copyright notice and this permission notice shall be included in
- *	all copies or substantial portions of the Software.
- *
- *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *	THE SOFTWARE.
- */
+/*
+The MIT License (MIT)
+
+Copyright (c) 2015 Wei Dai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #include "CuHE.h"
 #include "Debug.h"
@@ -29,15 +30,15 @@
 
 namespace cuHE {
 
-///////////////////////////////////////////////////////////////////////////////
-//// Initailization ///////////////////////////////////////////////////////////
+// Initailization
 static uint32 **dhBuffer_; // pinned memory for ZZX-Raw conversions
 
 void initCuHE(ZZ *coeffMod_, ZZX modulus) {
 	dhBuffer_ = new uint32 *[numDevices()];
 	for (int i=0; i<numDevices(); i++) {
 		CSC(cudaSetDevice(i));
-		CSC(cudaMallocHost(&dhBuffer_[i], param.rawLen*param._wordsCoeff(0)*sizeof(uint32)));
+		CSC(cudaMallocHost(&dhBuffer_[i],
+				param.rawLen*param._wordsCoeff(0)*sizeof(uint32)));
 		for (int j=0; j<numDevices(); j++) {
 			if (i != j)
 				CSC(cudaDeviceEnablePeerAccess(j, 0));
@@ -76,8 +77,7 @@ void initRelinearization(ZZX* evalkey) {
 	initRelin(evalkey);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//// Operations: CuCtxt & CuPtxt //////////////////////////////////////////////
+// Operations: CuCtxt & CuPtxt
 void copy(CuCtxt& dst, CuCtxt src, cudaStream_t st) {
 	if (&dst != &src) {
 		dst.reset();
@@ -210,7 +210,8 @@ void cNot(CuCtxt& out, CuCtxt& in, cudaStream_t st) {
 		out.setLevel(in.level(), in.domain(), in.device(), st);
 	}
 	CSC(cudaSetDevice(out.device()));
-	crtAddInt(out.cRep(), in.cRep(), (unsigned)param.modMsg-1, out.logq(), out.device(), st);
+	crtAddInt(out.cRep(), in.cRep(), (unsigned)param.modMsg-1, out.logq(),
+			out.device(), st);
 	CSC(cudaStreamSynchronize(st));
 }
 void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
@@ -220,7 +221,8 @@ void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
 			CSC(cudaSetDevice(dstDev));
 			ptr = deviceMalloc(tar.rRepSize());
 			CSC(cudaSetDevice(tar.device()));
-			CSC(cudaMemcpyPeerAsync(ptr, dstDev, tar.rRep(), tar.device(), tar.rRepSize(), st));
+			CSC(cudaMemcpyPeerAsync(ptr, dstDev, tar.rRep(), tar.device(),
+					tar.rRepSize(), st));
 			tar.rRepFree();
 			tar.rRep((uint32 *)ptr);
 			CSC(cudaStreamSynchronize(st));
@@ -229,7 +231,8 @@ void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
 			CSC(cudaSetDevice(dstDev));
 			ptr = deviceMalloc(tar.cRepSize());
 			CSC(cudaSetDevice(tar.device()));
-			CSC(cudaMemcpyPeerAsync(ptr, dstDev, tar.cRep(), tar.device(), tar.cRepSize(), st));
+			CSC(cudaMemcpyPeerAsync(ptr, dstDev, tar.cRep(), tar.device(),
+					tar.cRepSize(), st));
 			tar.cRepFree();
 			tar.cRep((uint32 *)ptr);
 			CSC(cudaStreamSynchronize(st));
@@ -238,7 +241,8 @@ void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
 			CSC(cudaSetDevice(dstDev));
 			ptr = deviceMalloc(tar.nRepSize());
 			CSC(cudaSetDevice(tar.device()));
-			CSC(cudaMemcpyPeerAsync(ptr, dstDev, tar.nRep(), tar.device(), tar.nRepSize(), st));
+			CSC(cudaMemcpyPeerAsync(ptr, dstDev, tar.nRep(), tar.device(),
+					tar.nRepSize(), st));
 			tar.nRepFree();
 			tar.nRep((uint64 *)ptr);
 			CSC(cudaStreamSynchronize(st));
@@ -250,8 +254,8 @@ void copyTo(CuCtxt& dst, CuCtxt& src, int dstDev, cudaStream_t st) {
 	copy(dst, src, st);
 	moveTo(dst, dstDev, st);
 }
-///////////////////////////////////////////////////////////////////////////////
-//// NTL Interface ////////////////////////////////////////////////////////////
+
+// NTL Interface
 void mulZZX(ZZX& out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
 	CuCtxt cin0, cin1;
 	cin0.setLevel(lvl, dev, in0);
@@ -262,9 +266,9 @@ void mulZZX(ZZX& out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
 	cin0.x2z(st);
 	out = cin0.zRep();
 }
-///////////////////////////////////////////////////////////////////////////////
-//// @class CuPolynomial //////////////////////////////////////////////////////
-//-- Constructor -------------------------------------------
+
+// @class CuPolynomial
+// Constructor
 CuPolynomial::CuPolynomial() {
 	logq_ = -1;
 	domain_ = -1;
@@ -291,7 +295,7 @@ void CuPolynomial::reset() {
 	domain_ = -1;
 	device_ = -1;
 }
-//-- Set Methods -------------------------------------------
+// Set Methods
 void CuPolynomial::logq(int val) { logq_ = val;}
 void CuPolynomial::domain(int val) { domain_ = val;}
 void CuPolynomial::device(int val) { device_ = val;}
@@ -300,7 +304,7 @@ void CuPolynomial::zRep(ZZX val) { zRep_ = val;}
 void CuPolynomial::rRep(uint32* val) { rRep_ = val;}
 void CuPolynomial::cRep(uint32* val) { cRep_ = val;}
 void CuPolynomial::nRep(uint64* val) { nRep_ = val;}
-//-- Get Methods -------------------------------------------
+// Get Methods
 int CuPolynomial::logq() { return logq_;}
 int CuPolynomial::device() { return device_;}
 int CuPolynomial::domain() { return domain_;}
@@ -309,7 +313,7 @@ ZZX CuPolynomial::zRep() { return zRep_;}
 uint32 * CuPolynomial::rRep() { return rRep_;}
 uint32 * CuPolynomial::cRep() { return cRep_;}
 uint64 * CuPolynomial::nRep() { return nRep_;}
-//-- Domain Conversions ------------------------------------
+// Domain Conversions
 void CuPolynomial::z2r(cudaStream_t st) {
 	if (domain_ != 0) {
 		printf("Error: Not in domain ZZX!\n");
@@ -458,7 +462,7 @@ void CuPolynomial::x2n(cudaStream_t st) {
 	else if (domain_ == 2)
 		c2n(st);	
 }
-//-- Memory management -------------------------------------
+// Memory management
 void CuPolynomial::rRepCreate(cudaStream_t st) {
 	CSC(cudaSetDevice(device_));
 	if (deviceAllocatorIsOn())
@@ -507,13 +511,12 @@ void CuPolynomial::nRepFree() {
 		CSC(cudaFree(nRep_));
 	nRep_ = NULL;
 }
-// Utilities -----------------------------------------------
+// Utilities
 int CuPolynomial::coeffWords() { return (logq_+31)/32;}
 size_t CuPolynomial::rRepSize() { return param.rawLen*coeffWords()*sizeof(uint32);}
 
-///////////////////////////////////////////////////////////////////////////////
-//// @class CuCtxt ////////////////////////////////////////////////////////////
-//-- Get Methods -------------------------------------------
+// @class CuCtxt
+// Get Methods
 void CuCtxt::setLevel(int lvl, int domain, int device, cudaStream_t st) {
 	level_ = lvl;
 	logq_ = param._logCoeff(lvl);
@@ -536,7 +539,7 @@ void CuCtxt::setLevel(int lvl, int device, ZZX val) {
 	zRep_ = val;
 }
 int CuCtxt::level() { return level_;}
-//-- Noise Control -----------------------------------------
+// Noise Control
 void CuCtxt::modSwitch(cudaStream_t st) {
 	if (logq_ < param.logCoeffMin+param.logCoeffCut) {
 		printf("Error: Cannot do modSwitch on last level!\n");
@@ -579,8 +582,7 @@ void CuCtxt::relin(cudaStream_t st) {
 size_t CuCtxt::cRepSize() { return param._numCrtPrime(level_)*param.crtLen*sizeof(uint32);}
 size_t CuCtxt::nRepSize() { return param._numCrtPrime(level_)*param.nttLen*sizeof(uint64);}
 
-///////////////////////////////////////////////////////////////////////////////
-//// @class CuPtxt ////////////////////////////////////////////////////////////
+// @class CuPtxt
 void CuPtxt::setLogq(int logq, int domain, int device, cudaStream_t st) {
 	logq_ = logq;
 	domain_ = domain;
@@ -603,4 +605,4 @@ void CuPtxt::setLogq(int logq, int device, ZZX val) {
 size_t CuPtxt::cRepSize() { return param.crtLen*sizeof(uint32);}
 size_t CuPtxt::nRepSize() { return param.nttLen*sizeof(uint64);}
 
-} // end cuHE
+} // namespace cuHE
