@@ -1,25 +1,27 @@
 /*
- *	The MIT License (MIT)
- *	Copyright (c) 2013-2015 Wei Dai
- *
- *	Permission is hereby granted, free of charge, to any person obtaining a copy
- *	of this software and associated documentation files (the "Software"), to deal
- *	in the Software without restriction, including without limitation the rights
- *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *	copies of the Software, and to permit persons to whom the Software is
- *	furnished to do so, subject to the following conditions:
- *
- *	The above copyright notice and this permission notice shall be included in
- *	all copies or substantial portions of the Software.
- *
- *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *	THE SOFTWARE.
- */
+The MIT License (MIT)
+
+Copyright (c) 2015 Wei Dai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #include "Operations.h"
 #include "Parameters.h"
 #include "DeviceManager.h"
@@ -28,8 +30,8 @@
 #include "CuHE.h"
 
 namespace cuHE {
-///////////////////////////////////////////////////////////////////////////////
-//// Pre-computation //////////////////////////////////////////////////////////
+
+// Pre-computation
 static ZZ* crtPrime; // decreasing?
 static ZZ* coeffModulus; // decreasing
 void genCrtPrimes() {
@@ -165,7 +167,7 @@ void initCrt(ZZ* coeffModulus) {
 		loadIcrtConst(0, dev);
 	getCoeffModuli(coeffModulus);
 }
-///////////////////////////////////////////////////////////////////////////////
+
 static uint64 **d_swap; // conversion buffer
 static uint32 **d_hold; // intt result buffer
 void initNtt() {
@@ -176,7 +178,8 @@ void initNtt() {
 	for (int dev=0; dev<numDevices(); dev++) {
 		cudaSetDevice(dev);
 		CSC(cudaMalloc(&d_swap[dev], param.nttLen*sizeof(uint64)));
-		CSC(cudaMalloc(&d_hold[dev], param.numCrtPrime*param.nttLen*sizeof(uint32)));
+		CSC(cudaMalloc(&d_hold[dev],
+				param.numCrtPrime*param.nttLen*sizeof(uint32)));
 	}
 }
 uint32 *inttResult(int dev) {
@@ -186,7 +189,7 @@ uint64 **ptrNttSwap() { return d_swap;}
 uint32 **ptrNttHold() {	return d_hold;}
 uint64 *ptrNttSwap(int dev) { return d_swap[dev];}
 uint32 *ptrNttHold(int dev) { return d_hold[dev];}
-///////////////////////////////////////////////////////////////////////////////
+
 uint64 **d_barrett_ntt;
 uint32 **d_barrett_crt;
 uint32 **d_barrett_src;
@@ -196,9 +199,12 @@ void createBarrettTemporySpace() {
 	d_barrett_src = new uint32*[numDevices()];
 	for (int dev=0; dev<numDevices(); dev++) {
 		cudaSetDevice(dev);
-		CSC(cudaMalloc(&d_barrett_crt[dev], param.numCrtPrime*param.nttLen*sizeof(uint32)));
-		CSC(cudaMalloc(&d_barrett_ntt[dev], param.numCrtPrime*param.nttLen*sizeof(uint64)));
-		CSC(cudaMalloc(&d_barrett_src[dev], param.numCrtPrime*param.nttLen*sizeof(uint32)));
+		CSC(cudaMalloc(&d_barrett_crt[dev],
+				param.numCrtPrime*param.nttLen*sizeof(uint32)));
+		CSC(cudaMalloc(&d_barrett_ntt[dev],
+				param.numCrtPrime*param.nttLen*sizeof(uint64)));
+		CSC(cudaMalloc(&d_barrett_src[dev],
+				param.numCrtPrime*param.nttLen*sizeof(uint32)));
 	}
 }
 static uint32 *ptrBarrettCrt(int dev) { return d_barrett_crt[dev];}
@@ -227,20 +233,22 @@ void setPolyModulus(ZZX m) {
 	CuCtxt cc;
 	cc.setLevel(0, 0, zu);
 	cc.x2n();
-	preload_barrett_u_n(cc.nRep(), param.numCrtPrime*param.nttLen*sizeof(uint64));
+	preload_barrett_u_n(cc.nRep(),
+			param.numCrtPrime*param.nttLen*sizeof(uint64));
 };
 void initBarrett(ZZX m) {
 	setPolyModulus(m);
 	createBarrettTemporySpace();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//// Operations ///////////////////////////////////////////////////////////////
+// Operations
 void crt(uint32 *dst, uint32 *src, int logq, int dev, cudaStream_t st) {
 	int lvl = param._getLevel(logq);
 	cudaSetDevice(dev);
-	crt<<<(param.modLen+63)/64, 64, param._wordsCoeff(lvl)*sizeof(uint32)*64, st>>>
-			(dst, src, param._numCrtPrime(lvl), param._wordsCoeff(lvl), param.modLen, param.crtLen);
+	crt<<<(param.modLen+63)/64, 64,
+			param._wordsCoeff(lvl)*sizeof(uint32)*64, st>>>(dst, src,
+			param._numCrtPrime(lvl), param._wordsCoeff(lvl), param.modLen,
+			param.crtLen);
 	CCE();
 }
 void icrt(uint32 *dst, uint32 *src, int logq, int dev, cudaStream_t st) {
@@ -249,38 +257,48 @@ void icrt(uint32 *dst, uint32 *src, int logq, int dev, cudaStream_t st) {
 	CSC(cudaStreamSynchronize(st));
 	CSC(cudaSetDevice(dev));
 	icrt<<<(param.modLen+63)/64, 64, 0, st>>>(dst, src, param._numCrtPrime(lvl),
-			param._wordsCoeff(lvl), param._wordsCoeff(lvl+1), param.modLen, param.crtLen);
+			param._wordsCoeff(lvl), param._wordsCoeff(lvl+1), param.modLen,
+			param.crtLen);
 	CCE();
 }
-void crtAdd(uint32 *sum, uint32 *x, uint32 *y, int logq, int dev, cudaStream_t st) {
+void crtAdd(uint32 *sum, uint32 *x, uint32 *y, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
 	cudaSetDevice(dev);
-	crt_add<<<(param.modLen+63)/64, 64, 0, st>>>(sum, x, y, param._numCrtPrime(lvl), param.modLen, param.crtLen);
+	crt_add<<<(param.modLen+63)/64, 64, 0, st>>>(sum, x, y,
+			param._numCrtPrime(lvl), param.modLen, param.crtLen);
 	CCE();
 }
-void crtAddInt(uint32 *sum, uint32 *x, unsigned a, int logq, int dev, cudaStream_t st) {
+void crtAddInt(uint32 *sum, uint32 *x, unsigned a, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
 	cudaSetDevice(dev);
-	crt_add_int<<<(param._numCrtPrime(lvl)+63)/64, 64, 0, st>>>(sum, x, a, param._numCrtPrime(lvl), param.crtLen);
+	crt_add_int<<<(param._numCrtPrime(lvl)+63)/64, 64, 0, st>>>(sum, x, a,
+			param._numCrtPrime(lvl), param.crtLen);
 	CCE();
 }
-void crtAddNX1(uint32 *sum, uint32 *x, uint32 *scalar, int logq, int dev, cudaStream_t st) {
+void crtAddNX1(uint32 *sum, uint32 *x, uint32 *scalar, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
 	cudaSetDevice(dev);
-	crt_add_nx1<<<(param.modLen+63)/64, 64, 0, st>>>(sum, x, scalar, param._numCrtPrime(lvl), param.modLen, param.crtLen);
+	crt_add_nx1<<<(param.modLen+63)/64, 64, 0, st>>>(sum, x, scalar,
+			param._numCrtPrime(lvl), param.modLen, param.crtLen);
 	CCE();
 }
-void crtMulInt(uint32 *prod, uint32 *x, int a, int logq, int dev, cudaStream_t st) {
+void crtMulInt(uint32 *prod, uint32 *x, int a, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
 	cudaSetDevice(dev);
-	crt_mul_int<<<(param.numCrtPrime-lvl+63)/64, 64, 0, st>>>(prod, x, a, param._numCrtPrime(lvl), param.crtLen);
+	crt_mul_int<<<(param.numCrtPrime-lvl+63)/64, 64, 0, st>>>(prod, x, a,
+			param._numCrtPrime(lvl), param.crtLen);
 	CCE();
 }
-void crtModSwitch(uint32 *dst, uint32 *src, int logq, int dev, cudaStream_t st) {
+void crtModSwitch(uint32 *dst, uint32 *src, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
 	cudaSetDevice(dev);
-	modswitch<<<(param.modLen+63)/64, 64, 0, st>>>(dst, src, param._numCrtPrime(lvl),
-			param.modLen, param.crtLen, param.modMsg);
+	modswitch<<<(param.modLen+63)/64, 64, 0, st>>>(dst, src,
+			param._numCrtPrime(lvl), param.modLen, param.crtLen, param.modMsg);
 	CCE();
 }
 
@@ -311,9 +329,11 @@ void _ntt(uint64 *X, uint32 *x, int dev, cudaStream_t st) {
 		CCE();
 	}
 }
-void _nttw(uint64 *X, uint32 *x, int coeffwords, int relinIdx, int dev, cudaStream_t st) {
+void _nttw(uint64 *X, uint32 *x, int coeffwords, int relinIdx, int dev,
+		cudaStream_t st) {
 	if (param.nttLen == 16384) {
-		ntt_1_16k_ext_block<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev), x, param.logRelin, relinIdx, coeffwords);
+		ntt_1_16k_ext_block<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev), x,
+				param.logRelin, relinIdx, coeffwords);
 		CCE();
 		ntt_2_16k<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev));
 		CCE();
@@ -321,7 +341,8 @@ void _nttw(uint64 *X, uint32 *x, int coeffwords, int relinIdx, int dev, cudaStre
 		CCE();
 	}
 	else if (param.nttLen == 32768) {
-		ntt_1_32k_ext_block<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev), x, param.logRelin,relinIdx, coeffwords);
+		ntt_1_32k_ext_block<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev), x,
+				param.logRelin,relinIdx, coeffwords);
 		CCE();
 		ntt_2_32k<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev));
 		CCE();
@@ -329,7 +350,8 @@ void _nttw(uint64 *X, uint32 *x, int coeffwords, int relinIdx, int dev, cudaStre
 		CCE();
 	}
 	else if (param.nttLen == 65536) {
-		ntt_1_64k_ext_block<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev), x, param.logRelin,relinIdx, coeffwords);
+		ntt_1_64k_ext_block<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev), x,
+				param.logRelin,relinIdx, coeffwords);
 		CCE();
 		ntt_2_64k<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev));
 		CCE();
@@ -344,7 +366,8 @@ void _intt(uint32 *x, uint64 *X, int crtidx, int dev, cudaStream_t st) {
 		CCE();
 		ntt_2_16k<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev));
 		CCE();
-		intt_3_16k_modcrt<<<param.nttLen/512, 64, 0, st>>>(x, ptrNttSwap(dev), crtidx);
+		intt_3_16k_modcrt<<<param.nttLen/512, 64, 0, st>>>(x, ptrNttSwap(dev),
+				crtidx);
 		CCE();
 	}
 	else if (param.nttLen == 32768) {
@@ -352,7 +375,8 @@ void _intt(uint32 *x, uint64 *X, int crtidx, int dev, cudaStream_t st) {
 		CCE();
 		ntt_2_32k<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev));
 		CCE();
-		intt_3_32k_modcrt<<<param.nttLen/512, 64, 0, st>>>(x, ptrNttSwap(dev), crtidx);
+		intt_3_32k_modcrt<<<param.nttLen/512, 64, 0, st>>>(x, ptrNttSwap(dev),
+				crtidx);
 		CCE();
 	}
 	else if (param.nttLen == 65536) {
@@ -360,11 +384,12 @@ void _intt(uint32 *x, uint64 *X, int crtidx, int dev, cudaStream_t st) {
 		CCE();
 		ntt_2_64k<<<param.nttLen/512, 64, 0, st>>>(ptrNttSwap(dev));
 		CCE();
-		intt_3_64k_modcrt<<<param.nttLen/512, 64, 0, st>>>(x, ptrNttSwap(dev), crtidx);
+		intt_3_64k_modcrt<<<param.nttLen/512, 64, 0, st>>>(x, ptrNttSwap(dev),
+				crtidx);
 		CCE();
 	}
 }
-//// all crt polynomials
+// all crt polynomials
 // ntt
 void ntt(uint64 *X, uint32 *x, int logq, int dev, cudaStream_t st) {
 	int lvl = param._getLevel(logq);
@@ -388,7 +413,8 @@ void inttDoubleDeg(uint32 *x, uint64 *X, int logq, int dev, cudaStream_t st) {
 	for (int i=0; i<param._numCrtPrime(lvl); i++)
 		_intt(ptrNttHold(dev)+i*param.nttLen, X+i*param.nttLen, i, dev, st);
 	CSC(cudaMemcpyAsync(x, ptrNttHold(dev),
-			param._numCrtPrime(lvl)*param.nttLen*sizeof(uint32), cudaMemcpyDeviceToDevice, st));
+			param._numCrtPrime(lvl)*param.nttLen*sizeof(uint32),
+				cudaMemcpyDeviceToDevice, st));
 }
 // intt without barrett copy result, x has param.crtLen
 void intt(uint32 *x, uint64 *X, int logq, int dev, cudaStream_t st) {
@@ -406,21 +432,29 @@ void inttMod(uint32 *x, uint64 *X, int logq, int dev, cudaStream_t st) {
 		_intt(ptrNttHold(dev)+i*param.nttLen, X+i*param.nttLen, i, dev, st);
 	barrett(x, lvl, dev, st);
 }
-void nttMul(uint64 *z, uint64 *y, uint64 *x, int logq, int dev, cudaStream_t st) {
+void nttMul(uint64 *z, uint64 *y, uint64 *x, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
-	ntt_mul<<<(param.nttLen+63)/64, 64, 0, st>>>(z, y, x, param._numCrtPrime(lvl), param.nttLen);
+	ntt_mul<<<(param.nttLen+63)/64, 64, 0, st>>>(z, y, x,
+			param._numCrtPrime(lvl), param.nttLen);
 }
-void nttMulNX1(uint64 *z, uint64 *x, uint64 *scalar, int logq, int dev, cudaStream_t st) {
+void nttMulNX1(uint64 *z, uint64 *x, uint64 *scalar, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
-	ntt_mul_nx1<<<(param.nttLen+63)/64, 64, 0, st>>>(z, x, scalar, param._numCrtPrime(lvl), param.nttLen);
+	ntt_mul_nx1<<<(param.nttLen+63)/64, 64, 0, st>>>(z, x, scalar,
+			param._numCrtPrime(lvl), param.nttLen);
 }
-void nttAdd(uint64 *z, uint64 *y, uint64 *x, int logq, int dev, cudaStream_t st) {
+void nttAdd(uint64 *z, uint64 *y, uint64 *x, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
-	ntt_add<<<(param.nttLen+63)/64, 64, 0, st>>>(z, x, y, param._numCrtPrime(lvl), param.nttLen);
+	ntt_add<<<(param.nttLen+63)/64, 64, 0, st>>>(z, x, y,
+			param._numCrtPrime(lvl), param.nttLen);
 }
-void nttAddNX1(uint64 *z, uint64 *x, uint64 *scalar, int logq, int dev, cudaStream_t st) {
+void nttAddNX1(uint64 *z, uint64 *x, uint64 *scalar, int logq, int dev,
+		cudaStream_t st) {
 	int lvl = param._getLevel(logq);
-	ntt_add_nx1<<<(param.nttLen+63)/64, 64, 0, st>>>(z, x, scalar, param._numCrtPrime(lvl), param.nttLen);
+	ntt_add_nx1<<<(param.nttLen+63)/64, 64, 0, st>>>(z, x, scalar,
+			param._numCrtPrime(lvl), param.nttLen);
 }
 
 void barrett(uint32 *dst, uint32 *src, int lvl, int dev, cudaStream_t st) {
@@ -428,8 +462,9 @@ void barrett(uint32 *dst, uint32 *src, int lvl, int dev, cudaStream_t st) {
 	uint32 *ptrCrt = ptrBarrettCrt(dev);
 	uint64 *ptrNtt = ptrBarrettNtt(dev);
 	uint32 *ptrSrc = ptrBarrettSrc(dev);
-	CSC(cudaMemcpyAsync(ptrSrc, src, param._numCrtPrime(lvl)*param.nttLen*sizeof(uint32),
-				cudaMemcpyDeviceToDevice, st));
+	CSC(cudaMemcpyAsync(ptrSrc, src,
+			param._numCrtPrime(lvl)*param.nttLen*sizeof(uint32),
+			cudaMemcpyDeviceToDevice, st));
 	// ptrSrc = f, deg = 2n-2
 	for (int i=0; i<param._numCrtPrime(lvl); i++)
 		_ntt(ptrNtt+i*param.nttLen, ptrSrc+i*param.nttLen+param.modLen-1, dev, st);
@@ -439,7 +474,8 @@ void barrett(uint32 *dst, uint32 *src, int lvl, int dev, cudaStream_t st) {
 	inttDoubleDeg(ptrCrt, ptrNtt, param._logCoeff(lvl), dev, st);
 	// ptrCrt = u * f>>(n-1), deg = 2n-2
 	for (int i=0; i<param._numCrtPrime(lvl); i++)
-		CSC(cudaMemsetAsync(ptrCrt+i*param.nttLen, 0, param.modLen*sizeof(uint32), st));
+		CSC(cudaMemsetAsync(ptrCrt+i*param.nttLen, 0, param.modLen*sizeof(uint32),
+				st));
 	// ptrCrt = u*f>>(2n-1)<<n
 	for (int i=0; i<param._numCrtPrime(lvl); i++)
 		_ntt(ptrNtt+i*param.nttLen, ptrCrt+i*param.nttLen+param.modLen, dev, st);
@@ -455,8 +491,9 @@ void barrett(uint32 *dst, uint32 *src, int lvl, int dev, cudaStream_t st) {
 	barrett_sub_2<<<(param.nttLen+63)/64, 64, 0, st>>>
 			(ptrSrc, ptrCrt, param._numCrtPrime(lvl), param.nttLen);
 	// ptrSrc = f - (m*u*f)>>(2n-1), deg = n
-	barrett_sub_mc<<<(param.nttLen+63)/64, 64, param._numCrtPrime(lvl)*sizeof(uint32), st>>>
-			(ptrSrc, param._numCrtPrime(lvl), param.modLen, param.crtLen, param.nttLen);
+	barrett_sub_mc<<<(param.nttLen+63)/64, 64,
+			param._numCrtPrime(lvl)*sizeof(uint32), st>>>(ptrSrc,
+			param._numCrtPrime(lvl), param.modLen, param.crtLen, param.nttLen);
 	// ptrSrc = ptrSrc - m, deg = n-1
 	for (int i=0; i<param._numCrtPrime(lvl); i++)
 		CSC(cudaMemcpyAsync(dst+i*param.crtLen, ptrSrc+i*param.nttLen,
@@ -465,4 +502,5 @@ void barrett(uint32 *dst, uint32 *src, int lvl, int dev, cudaStream_t st) {
 void barrett(uint32 *dst, int lvl, int dev, cudaStream_t st) {
 	barrett(dst, inttResult(dev), lvl, dev, st);
 }
-} // end cuHE
+
+} // namespace cuHE

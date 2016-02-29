@@ -1,38 +1,36 @@
-/* 
- *	The MIT License (MIT)
- *	Copyright (c) 2013-2015 Wei Dai
- *
- *	Permission is hereby granted, free of charge, to any person obtaining a copy
- *	of this software and associated documentation files (the "Software"), to deal
- *	in the Software without restriction, including without limitation the rights
- *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *	copies of the Software, and to permit persons to whom the Software is
- *	furnished to do so, subject to the following conditions:
- *
- *	The above copyright notice and this permission notice shall be included in
- *	all copies or substantial portions of the Software.
- *
- *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *	THE SOFTWARE.
- */
+/*
+The MIT License (MIT)
 
-/*!	/file Parameters.h
- *	/brief	Set parameters according to the algorithm.
- *			Reset parameters when necessary.
- *			All files get parameters from the method here.
- */
+Copyright (c) 2015 Wei Dai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// Set parameters according to the algorithm.
+// Reset parameters when necessary.
+// All files get parameters from the method here.
 
 #pragma once
 
 namespace cuHE {
 
-/** Parameters are initialized and reset
-	by calling methods of this class. */
+// Parameters are initialized and reset by calling methods of this class.
 struct GlobalParameters{ // global Parameters
 	// Ring
 	int mSize; // M_SIZE
@@ -65,17 +63,16 @@ struct GlobalParameters{ // global Parameters
 
 extern GlobalParameters param;
 
-/**	Set new parameters with:
-	d -- maximum depth of the circuit;
-	p -- message modulus;
-	w -- bit-length of windowed relinearition;
-	min -- bit-length of the smallest coefficient modulus;
-	cut -- coefficient cutting size in bits (per level);
-	m -- degree of the cyclic polynomial. */
+// Set new parameters with:
+// d -- maximum depth of the circuit;
+// p -- message modulus;
+// w -- bit-length of windowed relinearition;
+// min -- bit-length of the smallest coefficient modulus;
+// cut -- coefficient cutting size in bits (per level);
+// m -- degree of the cyclic polynomial. */
 void setParam(int d, int p, int w, int min, int cut, int m);
 
-/** Reset parameters to zeros
-	and delete global parameter. */
+// Reset parameters to zeros and delete global parameter.
 void resetParam();
 
-} // end cuHE
+} // namespace cuHE
