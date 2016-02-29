@@ -29,7 +29,7 @@ CUDA_ADD_LIBRARY( cuHE
 	   CuHE.cu
 	   Operations.cu
 	   Relinearization.cu
-	   SHARED
+	   STATIC
 )
 
 TARGET_LINK_LIBRARIES(cuHE ${NTL_LIB} ${M_LIB} ${GMP_LIB} ${GOMP_LIB})
