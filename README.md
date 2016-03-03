@@ -2,7 +2,7 @@ cuHE: Homomorphic and fast
 ==========================
 CUDA Homomorphic Encryption Library (cuHE) is a GPU-accelerated library for [homomorphic encryption][6] (HE) schemes and homomorphic algorithms defined over polynomial rings. cuHE yields an astonishing performance while providing a simple interface that greatly enhances programmer **productivity**. It features both algebraic techniques for homomorphic evalution of circuits and highly optimized code for single-GPU or multi-GPU machines. Develop **high-performance** applications rapidly with cuHE!
 
-The library is currently created for research purpose only. Several algorithms are implemented as examples and more will follow. Feedback and collaboration of any kind are welcomed.
+The cuHE library is distributed under the terms of the The MIT License (MIT). It is currently created for research purpose only. Several algorithms are implemented as examples and more will follow. Feedback and collaboration of any kind are welcomed.
 
 Features
 --------
@@ -61,16 +61,16 @@ void multiGPUs(int num); //adopt 'num' GPUs
 
 Those are all the initialization steps. To implement any HE scheme or circuit, please check out the provided examples.
 
-Contributors
-------------
+Developer
+---------
 The cuHE library is developed and maintained by [Wei Dai][13] from the [Vernam Group][14] at Worcester Polytechnic Institute.
 
 Acknowledgment
 --------------
-The cuHE library is distributed under the terms of the The MIT License (MIT).
-
 Funding for this research was in part provided by the US National Science Foundation
 CNS Award #1117590 and #1319130.
+
+We want to acknowledge [Andrea Peruffo][18] for improving and debugging the code.
 
 [1]: http://eprint.iacr.org/2014/233/ "DHS14"
 [2]: http://eprint.iacr.org/2013/094/ "LTV13"
@@ -89,3 +89,4 @@ CNS Award #1117590 and #1319130.
 [15]: http://link.springer.com/chapter/10.1007%2F978-3-319-29172-7_11 "cuHESpringer"
 [16]: http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7041001&tag=1 "Dai2014IEEE"
 [17]: http://link.springer.com/chapter/10.1007%2F978-3-662-48051-9_12 "Dai2015aSpringer"
+[18]: https://github.com/andreaTP "AndreaPeruffoGitHub"
