@@ -41,6 +41,9 @@ Thumbs.db
 #################
 cuhe/libcuHE.a
 examples/DHS/simple_DHS
+examples/DHS/simple_DHS_xor
+examples/DHS/simple_DHS_and
+examples/DHS/simple_DHS_not
 
 # CMake #
 #########
