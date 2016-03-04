@@ -27,16 +27,15 @@ int main() {
   dhs->decrypt(z, cuz.zRep(), 0); // decrypt level is 0
   dhs->batcher->decode(z, z);
 
-  ZZ ZERO = conv<ZZ>("0");
-  ZZ ONE = conv<ZZ>("1");
+  ZZ ZERO = to_ZZ(0);
+  ZZ ONE = to_ZZ(1);
 
   ZZX chk;
   clear(chk);
   for (int i=0; i<dhs->numSlot(); i++) {
     ZZ c = ZERO;
-    if (coeff(x[0], i) <= ZERO)
+    if (coeff(x[0], i) == ZERO)
       c = ONE;
-
     SetCoeff(chk, i, c%to_ZZ(p)); // ~
   }
 
