@@ -43,7 +43,8 @@ LINKCU = $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -w
 SRCCC	=
 SRCCX	=
 SRCCU	= test_ModP.cu\
-				test_ntt.cu
+				test_ntt.cu\
+				test_utils.cu
 SRCS = $(SRCCC) $(SRCCX) $(SRCCU)
 
 ## Dependency Files
@@ -60,7 +61,8 @@ OBJS = $(OBJCC) $(OBJCX) $(OBJCU)
 
 ## Executable Targets
 TARS = test_ModP\
-			 test_ntt
+			 test_ntt\
+			 test_utils
 
 #################################################
 #################################################
@@ -71,6 +73,9 @@ test_ModP: test_ModP.o
 
 test_ntt: test_ntt.o $(LIBS)
 	$(LINKCU) -o $@ test_ntt.o $(LIBS)
+
+test_utils: test_utils.o $(LIBS)
+	$(LINKCU) -o $@ test_utils.o $(LIBS)
 
 #test_Parameters: test_Parameters.o ../cuhe/Parameters.o
 #	$(LINKCU) -o $@ test_Parameters.o ../cuhe/Parameters.o
