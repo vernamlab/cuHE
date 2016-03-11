@@ -23,13 +23,14 @@ SET(LIB_NAME "cuHE")
 CUDA_BUILD_CLEAN_TARGET()
 
 CUDA_ADD_LIBRARY( cuHE
-		Parameters.cu 
-		DeviceManager.cu
-		Base.cu
-		CuHE.cu
-		Operations.cu
-		Relinearization.cu
-		STATIC
+    Parameters.cu 
+    DeviceManager.cu
+    Base.cu
+    CuHE.cu
+    Operations.cu
+    Relinearization.cu
+    Utils.cu
+    STATIC
 )
 
 TARGET_LINK_LIBRARIES(cuHE ${NTL_LIB} ${M_LIB} ${GMP_LIB} ${GOMP_LIB})

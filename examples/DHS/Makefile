@@ -11,9 +11,9 @@ FOPTM	= -O2
 FC++11 = -std=c++11
 FOMP = -fopenmp
 # CUDA Flags
-FARCH	= -arch=compute_52
-FCODE	= -code=sm_52
-FPTX = -code=compute_52
+FARCH	= -arch=compute_50
+FCODE	= -code=sm_50
+FPTX = -code=compute_50
 CXFLAGS	= $(FMACH) $(FOPTM) $(FC++11)
 CUFLAGS	= $(FARCH) $(FCODE) $(FPTX)
 
@@ -25,9 +25,8 @@ LGMP = -lgmp
 LOMP = -lgomp
 LINKERS = $(LCUDART) $(LMATH) $(LNTL) $(LGMP)
 
-
 ## Library Files
-LIBS = ../cuhe/libcuHE.a
+LIBS = ../../cuhe/libcuHE.a
 
 # Commands
 COMPCC = $(CC) $(CXFLAGS)
@@ -42,9 +41,11 @@ LINKCU = $(CU) $(CXFLAGS) $(CUFLAGS) $(LINKERS) -w
 ## Source Files
 SRCCC	=
 SRCCX	=
-SRCCU	= test_ModP.cu\
-				test_ntt.cu\
-				test_utils.cu
+SRCCU	= DHS.cu\
+				simple_DHS_and.cu\
+				simple_DHS_xor.cu\
+				simple_DHS_not.cu\
+				simple_DHS_keys.cu
 SRCS = $(SRCCC) $(SRCCX) $(SRCCU)
 
 ## Dependency Files
@@ -59,29 +60,24 @@ OBJCX	= $(SRCCX:.cpp=.o)
 OBJCU	= $(SRCCU:.cu=.o)
 OBJS = $(OBJCC) $(OBJCX) $(OBJCU)
 
-## Executable Targets
-TARS = test_ModP\
-			 test_ntt\
-			 test_utils
+## Build Targets
+TARS = simple_DHS_and\
+			 simple_DHS_xor\
+			 simple_DHS_not\
+			 simple_DHS_keys
 
 #################################################
 #################################################
 all: $(TARS)
 
-test_ModP: test_ModP.o
-	$(LINKCU) -o $@ test_ModP.o
-
-test_ntt: test_ntt.o $(LIBS)
-	$(LINKCU) -o $@ test_ntt.o $(LIBS)
-
-test_utils: test_utils.o $(LIBS)
-	$(LINKCU) -o $@ test_utils.o $(LIBS)
-
-#test_Parameters: test_Parameters.o ../cuhe/Parameters.o
-#	$(LINKCU) -o $@ test_Parameters.o ../cuhe/Parameters.o
-
-#test_CuHE: test_CuHE.o ../cuhe/libcuHE.a
-#	$(LINKCU) -o $@ test_CuHE.o ../cuhe/libcuHE.a
+simple_DHS_and: DHS.o simple_DHS_and.o $(LIBS)
+	$(LINKCU) -o $@ DHS.o simple_DHS_and.o $(LIBS)
+simple_DHS_xor: DHS.o simple_DHS_xor.o $(LIBS)
+	$(LINKCU) -o $@ DHS.o simple_DHS_xor.o $(LIBS)
+simple_DHS_not: DHS.o simple_DHS_not.o $(LIBS)
+	$(LINKCU) -o $@ DHS.o simple_DHS_not.o $(LIBS)
+simple_DHS_keys: DHS.o simple_DHS_keys.o $(LIBS)
+	$(LINKCU) -o $@ DHS.o simple_DHS_keys.o $(LIBS)
 
 $(OBJCC): $(@:%.o=%.c)
 	$(COMPCC) -M $(@:%.o=%.c) -o $(@:%.o=%.d)
@@ -93,5 +89,6 @@ $(OBJCU): $(@:%.o=%.cu)
 	$(COMPCU) -M $(@:%.o=%.cu) -o $(@:%.o=%.d)
 	$(COMPCU) -c $(@:%.o=%.cu) -o $@
 
+# Other Targets
 clean:
 	rm $(DEPS) $(OBJS) $(TARS)

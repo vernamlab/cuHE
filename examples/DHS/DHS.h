@@ -34,6 +34,9 @@
 #include <NTL/ZZ_pE.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_pXFactoring.h>
+#include <vector>
+#include <string>
+#include "../../cuhe/Utils.h"
 NTL_CLIENT
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,6 +72,7 @@ class CuDHS {
 public:
 	//// Constructor //////////////////////////////////////
 	CuDHS(int d, int p, int w, int min, int cut, int m);
+	CuDHS(string keys);
 	~CuDHS();
 
 	//// Get methods //////////////////////////////////////
@@ -76,6 +80,9 @@ public:
 	ZZ* coeffMod();
 	int numSlot();
 	ZZX* ek();
+
+	string getPrivateKey();
+	string getPublicKey();
 	//// Primitives ///////////////////////////////////////
 	void keyGen();
 
@@ -108,4 +115,6 @@ protected:
 	void genEk();
 	void genPolyMod_();
 	int factorDegree();
+private:
+	vector<cuHE_Utils::Picklable*> getPublicPicklables();
 }; // end DHS
