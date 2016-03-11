@@ -42,6 +42,7 @@ CUDA_ADD_LIBRARY( cuHEShared
 		CuHE.cu
 		Operations.cu
 		Relinearization.cu
+        Utils.cu
 		SHARED
 )
 
