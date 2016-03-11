@@ -15,7 +15,7 @@ INCLUDE(FindCUDA)
 
 FILE(GLOB SOURCES "*.cu" "*.h")
 
-LIST(APPEND CMAKE_CXX_FLAGS "-m64 -std=c++11 -O3 -ffast-math -Wall")
+LIST(APPEND CMAKE_CXX_FLAGS "-m64 -O3 -ffast-math -Wall")
 
 LIST(APPEND CUDA_NVCC_FLAGS "-ccbin gcc-${GCC_CUDA_VERISON} -std=c++11 -gencode arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH}")
 
@@ -24,8 +24,8 @@ SET(LIB_NAME "dhs")
 CUDA_BUILD_CLEAN_TARGET()
 
 CUDA_ADD_LIBRARY( dhs
-       DHS.cu
-	   STATIC
+    DHS.cu
+    STATIC
 )
 
 TARGET_INCLUDE_DIRECTORIES(dhs PUBLIC)
@@ -33,8 +33,8 @@ TARGET_INCLUDE_DIRECTORIES(dhs PUBLIC)
 TARGET_LINK_LIBRARIES(dhs ${CMAKE_SOURCE_DIR}/../../cuhe/libcuHE.a ${NTL_LIB} ${M_LIB} ${GMP_LIB} ${GOMP_LIB})
 
 CUDA_ADD_LIBRARY( dhsShared
-       DHS.cu
-	   SHARED
+    DHS.cu
+    SHARED
 )
 
 TARGET_INCLUDE_DIRECTORIES(dhsShared PUBLIC)
