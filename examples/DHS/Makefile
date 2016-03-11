@@ -44,7 +44,8 @@ SRCCX	=
 SRCCU	= DHS.cu\
 				simple_DHS_and.cu\
 				simple_DHS_xor.cu\
-				simple_DHS_not.cu
+				simple_DHS_not.cu\
+				simple_DHS_keys.cu
 SRCS = $(SRCCC) $(SRCCX) $(SRCCU)
 
 ## Dependency Files
@@ -62,7 +63,8 @@ OBJS = $(OBJCC) $(OBJCX) $(OBJCU)
 ## Build Targets
 TARS = simple_DHS_and\
 			 simple_DHS_xor\
-			 simple_DHS_not
+			 simple_DHS_not\
+			 simple_DHS_keys
 
 #################################################
 #################################################
@@ -74,6 +76,8 @@ simple_DHS_xor: DHS.o simple_DHS_xor.o $(LIBS)
 	$(LINKCU) -o $@ DHS.o simple_DHS_xor.o $(LIBS)
 simple_DHS_not: DHS.o simple_DHS_not.o $(LIBS)
 	$(LINKCU) -o $@ DHS.o simple_DHS_not.o $(LIBS)
+simple_DHS_keys: DHS.o simple_DHS_keys.o $(LIBS)
+	$(LINKCU) -o $@ DHS.o simple_DHS_keys.o $(LIBS)
 
 $(OBJCC): $(@:%.o=%.c)
 	$(COMPCC) -M $(@:%.o=%.c) -o $(@:%.o=%.d)

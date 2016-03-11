@@ -72,7 +72,7 @@ namespace cuHE_Utils {
 
   class PicklableMap {
     vector<Picklable*> picklables;
-    string separator = "#";
+    string separator = "\n";
 
     public:
       PicklableMap(vector<Picklable*>);
