@@ -7,6 +7,7 @@
 *.d
 *.o
 *.so
+*.a
 
 # Packages #
 ############
@@ -53,4 +54,7 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 
+examples/DHS/Makefile
+examples/DHS/simpleDHSAnd
+examples/DHS/simpleDHSXor
 cuhe/*.d
