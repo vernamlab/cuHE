@@ -78,12 +78,8 @@ CuDHS::CuDHS(string key) {
 
 	try {
 		pm->get("sk0");
-
-		cout << "ok" << endl;
-
 		sk_ = new ZZX[param.depth];
 	} catch (char const* s) {
-		cout << "is null" << endl;
 		sk_ = NULL;
 	}
 
