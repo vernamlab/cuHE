@@ -24,6 +24,7 @@
 #include "DHS.h"
 #include "../../cuhe/CuHE.h"
 using namespace cuHE;
+using namespace cuHE_Utils;
 
 ///////////////////////////////////////////////////////////////////////////////
 // @class CuDHS
@@ -47,6 +48,143 @@ CuDHS::CuDHS(int d, int p, int w, int min, int cut, int m) {
 	numSlot_ = param.modLen/factorDegree();
 	batcher = new Batcher(polyMod_, param.modLen/numSlot_, numSlot_); // setup batching
 }
+
+CuDHS::CuDHS(string key) {
+	PicklableMap* pm = new PicklableMap(key);
+
+	int d = stoi( pm->get("d")->getValues() );
+	int p = stoi( pm->get("p")->getValues() );
+	int w = stoi( pm->get("w")->getValues() );
+	int min = stoi( pm->get("min")->getValues() );
+	int cut = stoi( pm->get("cut")->getValues() );
+	int m = stoi( pm->get("m")->getValues() );
+
+	setParameters(d, p, w, min, cut, m);
+
+	coeffMod_ = pm->get("coeffMod")->getCoeffs();
+
+	polyMod_ = pm->get("polyMod")->getPoly();
+
+	pk_ = new ZZX[param.depth];
+
+	for (int i=0; i < param.depth; i++) {
+		stringstream buffer;
+		buffer << "pk" << i;
+
+		pk_[i] = pm->get(buffer.str())->getPoly();
+	}
+
+	sk_ = NULL;
+
+	try {
+		pm->get("sk0");
+		sk_ = new ZZX[param.depth];
+	} catch (char const* s) {
+		sk_ = NULL;
+	}
+
+	if (sk_ != NULL) {
+		for (int i=0; i < param.depth; i++) {
+			stringstream buffer;
+			buffer << "sk" << i;
+
+			sk_[i] = pm->get(buffer.str())->getPoly();
+		}
+	}
+
+	if (param.logRelin > 0) {
+		ek_ = new ZZX[param.numEvalKey];
+
+		for (int i=0; i < param.numEvalKey; i++) {
+			stringstream buffer;
+			buffer << "ek" << i;
+
+			ek_[i] = pm->get(buffer.str())->getPoly();
+		}
+	} else {
+		ek_ = NULL;
+	}
+
+	initCuHE(coeffMod_, polyMod_); // create polynomial ring
+	B = 1;
+
+	numSlot_ = param.modLen/factorDegree();
+	batcher = new Batcher(polyMod_, param.modLen/numSlot_, numSlot_); // setup batching
+}
+
+string CuDHS::getPublicKey() {
+
+  PicklableMap* pm = new PicklableMap(getPublicPicklables());
+
+  return pm->toString();
+}
+
+vector<Picklable*> CuDHS::getPublicPicklables() {
+	vector<Picklable*> ps;
+  ZZ* zz = new ZZ[1];
+
+  zz[0] = conv<ZZ>(param.depth);
+  Picklable* d = new Picklable("d", zz, 1);
+  ps.push_back(d);
+
+  zz[0] = conv<ZZ>(param.modMsg);
+  Picklable* p = new Picklable("p", zz, 1);
+  ps.push_back(p);
+
+  zz[0] = conv<ZZ>(param.logRelin);
+  Picklable* w = new Picklable("w", zz, 1);
+  ps.push_back(w);
+
+  zz[0] = conv<ZZ>(param.logCoeffMin);
+  Picklable* min = new Picklable("min", zz, 1);
+  ps.push_back(min);
+
+  zz[0] = conv<ZZ>(param.logCoeffCut);
+  Picklable* cut = new Picklable("cut", zz, 1);
+  ps.push_back(cut);
+
+  zz[0] = conv<ZZ>(param.mSize);
+  Picklable* m = new Picklable("m", zz, 1);
+  ps.push_back(m);
+
+  Picklable* coeffMod = new Picklable("coeffMod", coeffMod_, param.depth);
+  ps.push_back(coeffMod);
+
+  Picklable* polyMod = new Picklable("polyMod", polyMod_);
+  ps.push_back(polyMod);
+
+  for (int i=0; i < param.depth; i++) {
+		stringstream buffer;
+		buffer << "pk" << i;
+
+		ps.push_back( new Picklable(buffer.str(), pk_[i]) );
+	}
+
+  for (int i=0; i < param.numEvalKey; i++) {
+		stringstream buffer;
+		buffer << "ek" << i;
+
+		ps.push_back( new Picklable(buffer.str(), ek_[i]) );
+	}
+
+	return ps;
+}
+
+string CuDHS::getPrivateKey() {
+	vector<Picklable*> ps = getPublicPicklables();
+
+	for (int i=0; i < param.depth; i++) {
+		stringstream buffer;
+		buffer << "sk" << i;
+
+		ps.push_back( new Picklable(buffer.str(), sk_[i]) );
+	}
+
+	PicklableMap* pm = new PicklableMap(ps);
+
+	return pm->toString();
+}
+
 CuDHS::~CuDHS() {
 	clear(polyMod_);
 	delete [] coeffMod_;
@@ -83,6 +221,11 @@ void CuDHS::encrypt(ZZX& out, ZZX in, int lvl) {
 	out = t;
 }
 void CuDHS::decrypt(ZZX& out, ZZX in, int lvl, int maxMulPath) {
+	if (sk_ == NULL) {
+		cout << "operation not available without private key." << endl;
+		return;
+	}
+
 	ZZ x;
 	ZZX t = in;
 	coeffReduce(t, t, lvl);

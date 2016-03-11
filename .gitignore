@@ -41,20 +41,26 @@ Thumbs.db
 # Comiled files #
 #################
 cuhe/libcuHE.a
-examples/DHS/simple_DHS
+cuhe/libcuHEShared.so
+
+examples/DHS/libdhs.a
+examples/DHS/libdhsShared.so
+
 examples/DHS/simple_DHS_xor
 examples/DHS/simple_DHS_and
 examples/DHS/simple_DHS_not
+examples/DHS/simple_DHS_keys
+
+examples/DHS/private.key
+examples/DHS/public.key
+
+tests/test_utils
+tests/test_ntt
+tests/test_ModP
 
 # CMake #
 #########
-
 CMakeFiles
 CMakeCache.txt
 Makefile
 cmake_install.cmake
-
-examples/DHS/Makefile
-examples/DHS/simpleDHSAnd
-examples/DHS/simpleDHSXor
-cuhe/*.d
