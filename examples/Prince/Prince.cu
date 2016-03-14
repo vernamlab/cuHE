@@ -4,6 +4,7 @@
 #include "../../cuhe/CuHE.h"
 using namespace cuHE;
 
+#define checkEachRound
 const int circuitDepth = 25;
 
 int RC[768] = {
@@ -73,7 +74,7 @@ void Prince::run() {
 	}
 	cout<<"---------- Precomputation ----------"<<endl;
 	heSetup();
-/*	cout<<"---------- Set Message ----------"<<endl;
+	cout<<"---------- Set Message ----------"<<endl;
 	setMessage(A);
 	cout<<"---------- Set Keys ----------"<<endl;
 	setKeys(B, C);
@@ -92,47 +93,11 @@ void Prince::run() {
 	for (int i=0; i<64; i++)
 		cout<< coeff(res[i], 0);
 	cout<<endl;
-	cout<<"1001111110110101000110010011010111111100001111011111010100100100"<<endl;*/
-	int p = 2;
-	ZZX x[2], y[2];
-	SetSeed(to_ZZ(time(NULL)));
-	for (int k=0; k<2; k++) {
-		for (int i=0; i<cudhs->numSlot(); i++)
-			SetCoeff(x[k], i, RandomBnd(p));
-		cudhs->batcher->encode(y[k], x[k]);
-		cudhs->encrypt(y[k], y[k], 0);
-	}
-
-	CuCtxt* cuy = new CuCtxt[2];
-	CuCtxt cuz;
-	for (int k=0; k<2; k++) {
-		cuy[k].setLevel(0, 0, y[k]);
-		cuy[k].x2n();
-	}
-	cAnd(cuz, cuy[0], cuy[1]);
-	delete [] cuy;	
-	cuz.relin();
-	cuz.modSwitch();
-	cuz.x2z();
-
-
-	ZZX z;
-	cudhs->decrypt(z, cuz.zRep(), 1);
-	cuz.~CuCtxt();
-	cudhs->batcher->decode(z, z);
-
-	ZZX chk;
-	clear(chk);
-	for (int i=0; i<cudhs->numSlot(); i++)
-		SetCoeff(chk, i, coeff(x[0], i)*coeff(x[1], i)%to_ZZ(p));
-	cout<<deg(z)<<" "<<deg(chk)<<" ";
-	if (z == chk)
-		cout<<"true"<<endl;
-	else
-		cout<<"false"<<endl;
+	cout<<"1001111110110101000110010011010111111100001111011111010100100100"<<endl;
 }
 
 void Prince::check(int rd) {
+#ifdef checkEachRound
 	cout<<"Round: "<<rd<<endl;
 	for (int i=0; i<64; i++) {
 		ZZX chk;
@@ -178,12 +143,10 @@ void Prince::check(int rd) {
 			cout<<"1010000011100110110011110111110111001010101111100101101000000111"<<endl<<endl;
 			break;
 	}
-
+#endif
 }
 
 void Prince::princeEncrypt(ZZX tar[64], ZZX k0[64], ZZX k1[64]) {
-//	otimer ot;
-
 	round = 0;
 	addRoundKey(tar, k0);
 	addRoundKey(tar, k1);
@@ -191,9 +154,7 @@ void Prince::princeEncrypt(ZZX tar[64], ZZX k0[64], ZZX k1[64]) {
 	cout<<"start sbox"<<endl;
 	for (int i=0; i<5; i++) {
 		round++;
-//		ot.start();
-		SBOX(tar);//
-//		ot.stop();
+		SBOX(tar);
 		check(round-1);
 
 		MixColumn(tar);
@@ -201,16 +162,12 @@ void Prince::princeEncrypt(ZZX tar[64], ZZX k0[64], ZZX k1[64]) {
 		addRoundKey(tar, k1);
 	}
 
-//	ot.start();
-	SBOX(tar);//
-//	ot.stop();
+	SBOX(tar);
 	check(round);
 
 	M_p(tar);
 
-//	ot.start();
-	INV_SBOX(tar);//
-//	ot.stop();
+	INV_SBOX(tar);
 	check(round+1);
 
 	for (int i=0; i<5; i++) {
@@ -219,11 +176,9 @@ void Prince::princeEncrypt(ZZX tar[64], ZZX k0[64], ZZX k1[64]) {
 		addRC(tar, round);
 		inv_MixColumn(tar);
 
-//		ot.start();
-		INV_SBOX(tar);//
-//		ot.stop();
+		INV_SBOX(tar);
 		check(round+1);
-    }
+  }
 	round++;
 	addRC(tar, round);
 	addRoundKey(tar, k1);
@@ -231,22 +186,16 @@ void Prince::princeEncrypt(ZZX tar[64], ZZX k0[64], ZZX k1[64]) {
 	addRoundKey(tar, k0);
 	for (int i=0; i<64; i++)
 		cudhs->coeffReduce(tar[i], tar[i], circuitDepth-1);
-
-//	ot.show("All Sbox");
 }
 
 void Prince::SBOX(ZZX in[64]) {
 	for (int i=0; i<64; i++)
 		cudhs->coeffReduce(in[i], in[i], level);
-//	#pragma omp parallel num_threads(1)
-//	#pragma omp parallel num_threads(2)
-//	#pragma omp parallel num_threads(3)
 	#pragma omp parallel num_threads(numGPUs())
 	{
 		#pragma omp for nowait
 		for (int i=0; i<16; i++)
 			_sbox(&in[4*i], omp_get_thread_num(), level);
-//			_sbox(&in[4*i], 2, level);
 	}
 	#pragma omp barrier
 	level += 2;
@@ -375,15 +324,11 @@ void Prince::_sbox(ZZX in[4], int dev, int lvl) {
 void Prince::INV_SBOX(ZZX in[64]) {
 	for (int i=0; i<64; i++)
 		cudhs->coeffReduce(in[i], in[i], level);
-//	#pragma omp parallel num_threads(1)
-//	#pragma omp parallel num_threads(2)
-//	#pragma omp parallel num_threads(3)
 	#pragma omp parallel num_threads(numGPUs())
 	{
 		#pragma omp for nowait
 		for (int i=0; i<16; i++)
 			_inv_sbox(&in[4*i], omp_get_thread_num(), level);
-//			_inv_sbox(&in[4*i], 2, level);
 	}
 	#pragma omp barrier
 	level += 2;

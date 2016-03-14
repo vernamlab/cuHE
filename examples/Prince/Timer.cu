@@ -1,5 +1,5 @@
 #include "Timer.h"
-/*#include <libiomp/omp.h>
+#include <omp.h>
 
 otimer::otimer() {
 	startTime = 0;
@@ -23,4 +23,3 @@ void otimer::show(string s) {
 }
 otimer::~otimer() {
 }
-*/
