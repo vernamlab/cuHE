@@ -46,13 +46,12 @@ cuhe/libcuHEShared.so
 examples/DHS/libdhs.a
 examples/DHS/libdhsShared.so
 
-examples/DHS/simple_DHS_xor
-examples/DHS/simple_DHS_and
-examples/DHS/simple_DHS_not
-examples/DHS/simple_DHS_keys
+examples/DHS/simple_DHS
 
 examples/DHS/private.key
 examples/DHS/public.key
+
+examples/Prince/prince
 
 tests/test_utils
 tests/test_ntt
