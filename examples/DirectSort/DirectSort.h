@@ -22,39 +22,68 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "../DHS/DHS.h"
+#include "../../cuhe/CuHE.h"
 
-class Prince {
+typedef struct {
+	ZZX bit;
+	int lvl;
+} CtxtBit;
+
+typedef struct {
+	CtxtBit bit[8];
+	int lvl;
+} CtxtByte;
+
+typedef struct {
+	CtxtBit bit[32];
+	int lvl;
+} CtxtInt;
+
+class DirectSort {
 public:
-	Prince();
-	~Prince();
+	DirectSort();
+	~DirectSort();
 	void run();
 	void heSetup();
-	void setMessage(int *m);
-	void setKeys(int *k0, int *k1);
+
+	void setList();
+	void encList();
+	void directSort();
+	void decList();
+	void trueSort();
 
 private:
 	CuDHS *cudhs;
 	int level;
-	int round;
-	ZZX bits[64];
-	ZZX key0[64];
-	ZZX key1[64];
-	void princeEncrypt(ZZX tar[64], ZZX k0[64], ZZX k1[64]);
 
-	void SBOX(ZZX in[64]);
-	void _sbox(ZZX in[4], int dev, int lvl);
+	int sortSize;
+	int circuitDepth;
+	int minCoeffSize;
 
-	void INV_SBOX(ZZX in[64]);
-	void _inv_sbox(ZZX in[4], int dev, int lvl);
+	int *randList;
+	CtxtInt *list;
+	int *sortedList;
+	int *checkList;
+	void printList (int *ptr);
 
-	void check(int rd);
-	void addRoundKey(ZZX in[64], ZZX key[64]);
-	void addRC(ZZX in[64], int round);
-	void MixColumn(ZZX in[64]);
-	void M_p(ZZX in[64]);
-	void ShiftRow(ZZX in[64]);
-	void inv_MixColumn(ZZX in[64]);
-	void inv_ShiftRow(ZZX in[64]);
-	void KeyExpansion(ZZX key[64]);
+	CuCtxt ***cI;
+	CuCtxt ***cM;
+	CuCtxt ***cS;
+	CuCtxt **cO;
+	CuCtxt *cE;
+	CuCtxt **cT;
+
+	void createTempResults();
+	void prepareInput();
+	void constructMatrix();
+	void hammingWeights();
+	void prepareOutput();
+	void isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b);
+	void isEqual(CuCtxt &res, CuCtxt *a, CuCtxt *b);
+	void calHW(CuCtxt *s, CuCtxt *m);
+	void calHW4(CuCtxt *s, CuCtxt *m);
+	void calHW8(CuCtxt *s, CuCtxt *m);
+	void calHW16(CuCtxt *s, CuCtxt *m);
+	void calHW32(CuCtxt *s, CuCtxt *m);
+	void calHW64(CuCtxt *s, CuCtxt *m);
 };

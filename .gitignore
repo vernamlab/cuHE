@@ -51,7 +51,8 @@ examples/DHS/simple_DHS
 examples/DHS/private.key
 examples/DHS/public.key
 
-examples/Prince/prince
+examples/Prince/Prince
+examples/DirectSort/DirectSort
 
 tests/test_utils
 tests/test_ntt

@@ -19,11 +19,11 @@ LIST(APPEND CMAKE_CXX_FLAGS "-m64 -O3 -ffast-math -Wall")
 
 LIST(APPEND CUDA_NVCC_FLAGS "-ccbin gcc-${GCC_CUDA_VERISON} -std=c++11 -gencode arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH}")
 
-CUDA_ADD_EXECUTABLE(Prince
+CUDA_ADD_EXECUTABLE(DirectSort
   DHS.cu
   Timer.cu
-	Prince.cu
-  test_Prince.cu
+	DirectSort.cu
+  test_DirectSort.cu
 )
-TARGET_INCLUDE_DIRECTORIES(Prince PUBLIC ${NTL_INCLUDE_DIR} ${GMP_INCLUDE_DIR} -fopenmp)
-TARGET_LINK_LIBRARIES(Prince ${CMAKE_SOURCE_DIR}/../../cuhe/libcuHEShared.so ${NTL_LIBRARY} ${GMP_LIBRARIES} -lgomp)
+TARGET_INCLUDE_DIRECTORIES(DirectSort PUBLIC ${NTL_INCLUDE_DIR} ${GMP_INCLUDE_DIR} -fopenmp)
+TARGET_LINK_LIBRARIES(DirectSort ${CMAKE_SOURCE_DIR}/../../cuhe/libcuHEShared.so ${NTL_LIBRARY} ${GMP_LIBRARIES} -lgomp)
