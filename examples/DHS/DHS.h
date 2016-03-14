@@ -1,32 +1,33 @@
-/* 
- *	The MIT License (MIT)
- *	Copyright (c) 2013-2015 Wei Dai
- *
- *	Permission is hereby granted, free of charge, to any person obtaining a copy
- *	of this software and associated documentation files (the "Software"), to deal
- *	in the Software without restriction, including without limitation the rights
- *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *	copies of the Software, and to permit persons to whom the Software is
- *	furnished to do so, subject to the following conditions:
- *
- *	The above copyright notice and this permission notice shall be included in
- *	all copies or substantial portions of the Software.
- *
- *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *	THE SOFTWARE.
- */
+/*
+The MIT License (MIT)
 
-/*!	/file DHS.h
- *	/brief Homomorphic encryption scheme (DHS as an example).
- */
+Copyright (c) 2015 Wei Dai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+/*
+A somewhat homomorphic encryption scheme,
+proposed by Yarkin Doroz, Yin Hu and Berk Sunar (DHS).
+*/
 
 #pragma once
-
 #include <NTL/ZZ.h>
 #include <NTL/ZZX.h>
 #include <NTL/mat_ZZ.h>
@@ -39,9 +40,7 @@
 #include "../../cuhe/Utils.h"
 NTL_CLIENT
 
-///////////////////////////////////////////////////////////////////////////////
-/** @class Batcher */
-/*!	/brief Batching technique.	*/
+// Batching technique
 class Batcher{
 public:
 	Batcher(ZZX polymod, int f_degree, int f_size);
@@ -65,37 +64,28 @@ private:
 	int size;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-/** @class DHS */
-/*!	/brief Somewhat homomorphic encryption scheme by Doroz, Hu and Sunar.	*/
+// DHS scheme for CUDA GPUs
 class CuDHS {
 public:
-	//// Constructor //////////////////////////////////////
+	// Constructor
 	CuDHS(int d, int p, int w, int min, int cut, int m);
 	CuDHS(string keys);
 	~CuDHS();
-
-	//// Get methods //////////////////////////////////////
+	// Get methods
 	ZZX polyMod();
 	ZZ* coeffMod();
 	int numSlot();
 	ZZX* ek();
-
 	string getPrivateKey();
 	string getPublicKey();
-	//// Primitives ///////////////////////////////////////
+	// Primitives
 	void keyGen();
-
 	void encrypt(ZZX& out, ZZX in, int lvl);
-
+	// If no relinearization is performed, maxMulPath should be
+	// the maximum number of multipliers included in a ciphertext.
 	void decrypt(ZZX& out, ZZX in, int lvl, int maxMulPath = 1);
-	// if no relinearization is performed, maxMulPath should be
-	// the maximum number of multipliers included in a ciphertext
-
 	void balance(ZZX& x, int lvl);
-
 	void unbalance(ZZX& x, int lvl);
-
 	Batcher *batcher;
 protected:
 	int B; // bound of distribution to sample polynomials from
@@ -117,4 +107,4 @@ protected:
 	int factorDegree();
 private:
 	vector<cuHE_Utils::Picklable*> getPublicPicklables();
-}; // end DHS
+};

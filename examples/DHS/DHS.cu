@@ -1,25 +1,26 @@
-/* 
- *	The MIT License (MIT)
- *	Copyright (c) 2013-2015 Wei Dai
- *
- *	Permission is hereby granted, free of charge, to any person obtaining a copy
- *	of this software and associated documentation files (the "Software"), to deal
- *	in the Software without restriction, including without limitation the rights
- *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *	copies of the Software, and to permit persons to whom the Software is
- *	furnished to do so, subject to the following conditions:
- *
- *	The above copyright notice and this permission notice shall be included in
- *	all copies or substantial portions of the Software.
- *
- *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *	THE SOFTWARE.
- */
+/*
+The MIT License (MIT)
+
+Copyright (c) 2015 Wei Dai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #include "DHS.h"
 #include "../../cuhe/CuHE.h"
@@ -41,12 +42,16 @@ CuDHS::CuDHS(int d, int p, int w, int min, int cut, int m) {
 	else {
 		ek_ = NULL;
 	}
-	genPolyMod_(); // generate polynomial modulus
-	initCuHE(coeffMod_, polyMod_); // create polynomial ring
+	// generate polynomial modulus
+	genPolyMod_();
+	// create polynomial ring
+	initCuHE(coeffMod_, polyMod_);
 	B = 1;
-	keyGen(); // key generation
+	// key generation
+	keyGen();
 	numSlot_ = param.modLen/factorDegree();
-	batcher = new Batcher(polyMod_, param.modLen/numSlot_, numSlot_); // setup batching
+	// setup batching
+	batcher = new Batcher(polyMod_, param.modLen/numSlot_, numSlot_);
 }
 
 CuDHS::CuDHS(string key) {
@@ -113,9 +118,7 @@ CuDHS::CuDHS(string key) {
 }
 
 string CuDHS::getPublicKey() {
-
   PicklableMap* pm = new PicklableMap(getPublicPicklables());
-
   return pm->toString();
 }
 
@@ -198,6 +201,7 @@ ZZX CuDHS::polyMod() { return polyMod_;};
 ZZ* CuDHS::coeffMod() { return coeffMod_;};
 int CuDHS::numSlot() { return numSlot_;};
 ZZX* CuDHS::ek() { return ek_;};
+
 //// Primitives ///////////////////////////////////////////
 void CuDHS::keyGen() {
 	genPkSk();
