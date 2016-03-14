@@ -4,7 +4,7 @@
 #include "../../cuhe/CuHE.h"
 using namespace cuHE;
 
-#define checkEachRound
+//#define checkEachRound
 const int circuitDepth = 25;
 
 int RC[768] = {
@@ -97,8 +97,8 @@ void Prince::run() {
 }
 
 void Prince::check(int rd) {
-#ifdef checkEachRound
 	cout<<"Round: "<<rd<<endl;
+#ifdef checkEachRound
 	for (int i=0; i<64; i++) {
 		ZZX chk;
 		cudhs->decrypt(chk, bits[i], level);
