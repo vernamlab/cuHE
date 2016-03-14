@@ -1,0 +1,29 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(dhs)
+
+SET(GPU_ARCH "50" CACHE STRING "Cuda architecture number, one of ('20', '30', '32', '35', '37', '50', '52', '53')")
+SET(GCC_CUDA_VERISON "4.9" CACHE STRING "GCC compiler to be used with cuda")
+
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../cuhe/cmake)
+
+FIND_PACKAGE(NTL REQUIRED)
+FIND_PACKAGE(OpenMP REQUIRED)
+FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(GMP REQUIRED)
+
+INCLUDE(FindCUDA)
+
+FILE(GLOB SOURCES "*.cu" "*.h")
+
+LIST(APPEND CMAKE_CXX_FLAGS "-m64 -O3 -ffast-math -Wall")
+
+LIST(APPEND CUDA_NVCC_FLAGS "-ccbin gcc-${GCC_CUDA_VERISON} -std=c++11 -gencode arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH}")
+
+CUDA_ADD_EXECUTABLE(prince
+  DHS.cu
+  Timer.cu
+	Prince.cu
+  test_Prince.cu
+)
+TARGET_INCLUDE_DIRECTORIES(prince PUBLIC ${NTL_INCLUDE_DIR} ${GMP_INCLUDE_DIR} -fopenmp)
+TARGET_LINK_LIBRARIES(prince ${CMAKE_SOURCE_DIR}/../../cuhe/libcuHEShared.so ${NTL_LIBRARY} ${GMP_LIBRARIES} -lgomp)
