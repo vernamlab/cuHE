@@ -23,7 +23,7 @@ These examples give an idea of how to program with the cuHE library.
 System Requirements
 -------------------
 1. NVIDIA [CUDA-Enabled GPUs][7] with computation compability 3.0 or higher
-2. [NTL][8]: A Library for doing Number Theory 9.3.0 (requires C++11)
+2. [NTL][8]: A Library for doing Number Theory 9.3.0 (requires C++11) **NOTE:** to avoid random crashes compile it running ```./configure NTL_EXCEPTIONS=on```
 3. The [OpenMP][9] API
 
 Compile

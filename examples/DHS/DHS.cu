@@ -470,13 +470,23 @@ void Batcher::CalculateNs() {
 	ZZ_pX mi;
 	N.SetLength(size);
 	for (int i=0; i<size; i++) {
-		mi = factors[i];
-		ZZ_pE::init(mi);
+		int isInvertible = 0;
+		while (isInvertible == 0) {
+			mi = factors[i];
+			ZZ_pE::init(mi);
 
-		ZZ_pE t = to_ZZ_pE((M[i])%mi);
-		ZZ_pE ti = inv(t);
+			ZZ_pE t = to_ZZ_pE((M[i])%mi);
 
-		N[i] = rep(ti);
+			ZZ_pE ti;
+			try {
+				ti = inv(t);
+				isInvertible = 1;
+			} catch (runtime_error &e) {
+				isInvertible = 0;
+			}
+
+			N[i] = rep(ti);
+		}
 	}
 }
 void Batcher::CalculateMxNs() {
