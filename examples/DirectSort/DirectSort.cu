@@ -275,20 +275,16 @@ void DirectSort::constructMatrix() {
     int nowDev = omp_get_thread_num();
     int cnt = 0;
     for (int i=0; i<sortSize; i++) {
-    	cout<<i<<endl;
       cM[nowDev][i][i].setLevel(level+6, 2, nowDev);
       for (int j=i+1; j<sortSize; j++) {
       	if (cnt%nGPUs == nowDev) {
-      		cout<<"\t"<<j<<endl;
           isLess(cM[nowDev][j][i], cI[nowDev][i], cI[nowDev][j]);
-          cout<<"\t"<<j<<endl;
           cNot(cM[nowDev][i][j], cM[nowDev][j][i]);
         }
         else {
           cM[nowDev][i][j].setLevel(level+6, 2, nowDev);
           cM[nowDev][j][i].setLevel(level+6, 2, nowDev);
         }
-        cout<<"\t"<<j<<endl;
         cnt ++;
       }
     }
@@ -314,7 +310,8 @@ void DirectSort::constructMatrix() {
   ot.show("Matrix");
 #endif
 }
-
+// TODO:remove
+#include "../../cuhe/Debug.h"
 void DirectSort::isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b) {
   CuCtxt y;
   CuCtxt m[32], t[32];
@@ -359,8 +356,13 @@ void DirectSort::isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b) {
     }
   }
   // lvl 6
+  // TODO: wrong
   m[31].modSwitch();
+  cout<<m[31].domain()<<"\t"<<m[31].cRep()<<endl;
   copy(res, m[31]);
+  cout<<res.domain()<<"\t"<<res.cRep()<<endl;
+  cout<<m[31].domain()<<"\t"<<m[31].cRep()<<endl;
+  CSC(cudaFree(m[31].cRep()));
 }
 
 
