@@ -22,17 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// Defines circuit depth and minimum coefficient size for decryption,
+// according to a given sorting size.
+// Provides a sorting method.
+
+#include "DHS.h"
+#include <vector>
+using namespace std;
 #include "../../cuhe/CuHE.h"
+using namespace cuHE;
 
 typedef struct {
 	ZZX bit;
 	int lvl;
 } CtxtBit;
-
-typedef struct {
-	CtxtBit bit[8];
-	int lvl;
-} CtxtByte;
 
 typedef struct {
 	CtxtBit bit[32];
@@ -42,29 +45,20 @@ typedef struct {
 class DirectSort {
 public:
 	DirectSort();
+	DirectSort(int);
 	~DirectSort();
 	void run();
-	void heSetup();
-
-	void setList();
-	void encList();
-	void directSort();
-	void decList();
-	void trueSort();
-
 private:
 	CuDHS *cudhs;
-	int level;
+	int level; // circuit level tracker
+	int sortSize; // number of integers to sort
+	int circuitDepth; // circuitDepth
+	int minCoeffSize; // minimum bit-size of coefficient to decrypt
 
-	int sortSize;
-	int circuitDepth;
-	int minCoeffSize;
-
-	int *randList;
-	CtxtInt *list;
-	int *sortedList;
-	int *checkList;
-	void printList (int *ptr);
+	vector<int> randList; // create random integers
+	vector<int> trueSortedList; // plaintext sort
+	vector<int>	sortedList; // homomorphic sort
+	vector<vector<ZZX>> list; // encrypted list
 
 	CuCtxt ***cI;
 	CuCtxt ***cM;
@@ -73,12 +67,21 @@ private:
 	CuCtxt *cE;
 	CuCtxt **cT;
 
-	void createTempResults();
+	void heSetup();
+	void setList();
+	void trueSort();
+	void printList (vector<int>);
+	void configCircuit(int &, int &);
+	void encList();
+	void decList();
+	void directSort();
+	void preAllocation();
 	void prepareInput();
 	void constructMatrix();
-	void hammingWeights();
-	void prepareOutput();
 	void isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b);
+
+/*	void hammingWeights();
+	void prepareOutput();
 	void isEqual(CuCtxt &res, CuCtxt *a, CuCtxt *b);
 	void calHW(CuCtxt *s, CuCtxt *m);
 	void calHW4(CuCtxt *s, CuCtxt *m);
@@ -86,4 +89,5 @@ private:
 	void calHW16(CuCtxt *s, CuCtxt *m);
 	void calHW32(CuCtxt *s, CuCtxt *m);
 	void calHW64(CuCtxt *s, CuCtxt *m);
+*/
 };

@@ -26,8 +26,8 @@ SOFTWARE.
 
 int main() {
 
-	Prince algo;
-	algo.run();
+	Prince t;
+	t.run();
 
 	return 0;
 }

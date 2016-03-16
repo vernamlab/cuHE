@@ -151,7 +151,7 @@ __inline__ __device__
 uint64 _ls_modP(uint64 x, int l) {
 	register uint64 tx = x;
 	register uint32 buff[7];
-	switch(l){
+	switch(l) {
 		// 2 words
 		case (0):
 			buff[0] = (uint32)tx;
