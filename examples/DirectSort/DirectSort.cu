@@ -80,11 +80,13 @@ void DirectSort::run() {
 	encList();
 	cout<<"---------- Direct Sort -----------"<<endl;
 	preAllocation();
+  startAllocator();
 	otimer ot;
 	ot.start();
 	directSort();
 	ot.stop();
 	ot.show("Sort Time");
+	stopAllocator();
 	cout<<"---------- Decrypt List ----------"<<endl;
 	decList();
 	trueSort();
@@ -311,7 +313,6 @@ void DirectSort::constructMatrix() {
 #endif
 }
 // TODO:remove
-#include "../../cuhe/Debug.h"
 void DirectSort::isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b) {
   CuCtxt y;
   CuCtxt m[32], t[32];
@@ -358,11 +359,7 @@ void DirectSort::isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b) {
   // lvl 6
   // TODO: wrong
   m[31].modSwitch();
-  cout<<m[31].domain()<<"\t"<<m[31].cRep()<<endl;
   copy(res, m[31]);
-  cout<<res.domain()<<"\t"<<res.cRep()<<endl;
-  cout<<m[31].domain()<<"\t"<<m[31].cRep()<<endl;
-  CSC(cudaFree(m[31].cRep()));
 }
 
 

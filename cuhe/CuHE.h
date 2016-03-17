@@ -181,30 +181,30 @@ void initRelinearization(ZZX* evalkey);
 // x = a*b
 // assume that in0 and in1 are as large as ciphertexts
 // lvl is the circuit level, dev and st are the chosen CUDA device and stream
-void mulZZX(ZZX& x, ZZX a, ZZX b, int lvl, int dev, cudaStream_t st = 0);
+void mulZZX(ZZX &x, ZZX a, ZZX b, int lvl, int dev, cudaStream_t st = 0);
 
 // Operations: CuCtxt & CuPtxt
 // x = a
 // values are copied with memory copy
-void copy(CuCtxt& x, CuCtxt a, cudaStream_t st = 0);
+void copy(CuCtxt &x, CuCtxt &a, cudaStream_t st = 0);
 // x = a * b
-void cAnd(CuCtxt& x, CuCtxt& a, CuCtxt& b, cudaStream_t st = 0);
+void cAnd(CuCtxt &x, CuCtxt &a, CuCtxt &b, cudaStream_t st = 0);
 // x = c * p
-void cAnd(CuCtxt& x, CuCtxt& c, CuPtxt& p, cudaStream_t st = 0);
+void cAnd(CuCtxt &x, CuCtxt &c, CuPtxt &p, cudaStream_t st = 0);
 // x = a + b
-void cXor(CuCtxt& x, CuCtxt& a, CuCtxt& b, cudaStream_t st = 0);
+void cXor(CuCtxt &x, CuCtxt &a, CuCtxt &b, cudaStream_t st = 0);
 // x = a + b
-void cXor(CuCtxt& x, CuCtxt& c, CuPtxt& p, cudaStream_t st = 0);
+void cXor(CuCtxt &x, CuCtxt &c, CuPtxt &p, cudaStream_t st = 0);
 // x = a + modMsg - 1 = !a
 // modMsg is the message space
-void cNot(CuCtxt& x, CuCtxt& a, cudaStream_t st = 0);
+void cNot(CuCtxt &x, CuCtxt &a, cudaStream_t st = 0);
 // move x to destination device (dstDev)
 // remove x from the source device
 // !!! stream must be one on the source device
-void moveTo(CuCtxt& x, int dstDev, cudaStream_t st = 0);
+void moveTo(CuCtxt &x, int dstDev, cudaStream_t st = 0);
 // dst becomes a copy of src execpt dst in on device dstDev
 // src remains unchanged
 // !!! stream must be one on the source device
-void copyTo(CuCtxt& dst, CuCtxt& src, int dstDev, cudaStream_t st = 0);
+void copyTo(CuCtxt &dst, CuCtxt &src, int dstDev, cudaStream_t st = 0);
 
 } // namespace cuHE

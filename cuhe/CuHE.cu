@@ -78,7 +78,7 @@ void initRelinearization(ZZX* evalkey) {
 }
 
 // Operations: CuCtxt & CuPtxt
-void copy(CuCtxt& dst, CuCtxt src, cudaStream_t st) {
+void copy(CuCtxt &dst, CuCtxt &src, cudaStream_t st) {
 	if (&dst != &src) {
 		dst.reset();
 		dst.setLevel(src.level(), src.domain(), src.device(), st);
@@ -98,7 +98,7 @@ void copy(CuCtxt& dst, CuCtxt src, cudaStream_t st) {
 		CSC(cudaStreamSynchronize(st));
 	}
 }
-void cAnd(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
+void cAnd(CuCtxt &out, CuCtxt &in0, CuCtxt &in1, cudaStream_t st) {
 	if (in0.device() != in1.device()) {
 		cout<<"Error: Multiplication of different devices!"<<endl;
 		terminate();
@@ -120,7 +120,7 @@ void cAnd(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
 	out.isProd(true);
 	CSC(cudaStreamSynchronize(st));
 }
-void cAnd(CuCtxt& out, CuCtxt& inc, CuPtxt& inp, cudaStream_t st) {
+void cAnd(CuCtxt &out, CuCtxt &inc, CuPtxt &inp, cudaStream_t st) {
 	if (inc.device() != inp.device()) {
 		cout<<"Error: Multiplication of different devices!"<<endl;
 		terminate();
@@ -138,7 +138,7 @@ void cAnd(CuCtxt& out, CuCtxt& inc, CuPtxt& inp, cudaStream_t st) {
 	out.isProd(true);
 	CSC(cudaStreamSynchronize(st));
 }
-void cXor(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
+void cXor(CuCtxt &out, CuCtxt &in0, CuCtxt &in1, cudaStream_t st) {
 	if (in0.device() != in1.device()) {
 		cout<<"Error: Addition of different devices!"<<endl;
 		terminate();
@@ -171,7 +171,7 @@ void cXor(CuCtxt& out, CuCtxt& in0, CuCtxt& in1, cudaStream_t st) {
 		terminate();
 	}
 }
-void cXor(CuCtxt& out, CuCtxt& in0, CuPtxt& in1, cudaStream_t st) {
+void cXor(CuCtxt &out, CuCtxt &in0, CuPtxt &in1, cudaStream_t st) {
 	if (in0.device() != in1.device()) {
 		cout<<"Error: Addition of different devices!"<<endl;
 		terminate();
@@ -200,7 +200,7 @@ void cXor(CuCtxt& out, CuCtxt& in0, CuPtxt& in1, cudaStream_t st) {
 		terminate();
 	}
 }
-void cNot(CuCtxt& out, CuCtxt& in, cudaStream_t st) {
+void cNot(CuCtxt &out, CuCtxt &in, cudaStream_t st) {
 	if (in.domain() != 2) {
 		cout<<"Error: cNot of non-CRT domain!"<<endl;
 		terminate();
@@ -214,7 +214,7 @@ void cNot(CuCtxt& out, CuCtxt& in, cudaStream_t st) {
 			out.device(), st);
 	CSC(cudaStreamSynchronize(st));
 }
-void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
+void moveTo(CuCtxt &tar, int dstDev, cudaStream_t st) {
 	if (dstDev != tar.device()) {
 		void *ptr;
 		if (tar.domain() == 1) {
@@ -250,13 +250,13 @@ void moveTo(CuCtxt& tar, int dstDev, cudaStream_t st) {
 		tar.device(dstDev);
 	}
 }
-void copyTo(CuCtxt& dst, CuCtxt& src, int dstDev, cudaStream_t st) {
+void copyTo(CuCtxt &dst, CuCtxt &src, int dstDev, cudaStream_t st) {
 	copy(dst, src, st);
 	moveTo(dst, dstDev, st);
 }
 
 // NTL Interface
-void mulZZX(ZZX& out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
+void mulZZX(ZZX &out, ZZX in0, ZZX in1, int lvl, int dev, cudaStream_t st) {
 	CuCtxt cin0, cin1;
 	cin0.setLevel(lvl, dev, in0);
 	cin1.setLevel(lvl, dev, in1);
