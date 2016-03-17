@@ -103,7 +103,7 @@ void DirectSort::configCircuit(int &d, int &min) {
 	switch (sortSize) {
 		case (4):
 			d = 12;
-			min = 20;
+			min = 25;
 			return;
 		case (8):
 			d = 13;
@@ -131,6 +131,7 @@ void DirectSort::setList() {
 	vector<int> t(sortSize, 0);
 	for (auto &i: t)
 		i = rand()%1000;
+	// TODO: remove fixed inputs
 	t[0] = 3;
 	t[1] = 1;
 	t[2] = 0;
@@ -204,7 +205,7 @@ void DirectSort::directSort() {
 		cudhs->decrypt(cmpZZX, cmp.zRep(), level+6);
 		cout<<coeff(cmpZZX, 0)<<endl;
 	}
-  constructMatrix();
+/*  constructMatrix();
 #ifdef check_cM
   cudaDeviceSynchronize();
   cout<<"cM:"<<endl;
@@ -237,6 +238,7 @@ void DirectSort::directSort() {
 	  cout<<idx<<endl;
 	}
 #endif
+*/
 }
 
 void DirectSort::preAllocation() {

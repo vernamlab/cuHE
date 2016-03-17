@@ -850,3 +850,228 @@ void DirectSort::calHW64(CuCtxt *s, CuCtxt *m) {
 }
 
 
+void Instruct::isless(CUFX &res, CUFX *a, CUFX *b) {
+  CUFX x[32], y[32];
+  for (int i=0; i<32; i++) {
+    x[i] = a[i];
+    y[i] = b[i];
+  }
+  CUFX m[32], t[32];
+  int level = globalLevel;
+
+  // init & level 1
+  for (int i=0; i<32; i++) {
+    x[i].x2c();
+    y[i].x2c();
+    t[i] = x[i]+y[i]+1;
+  }
+  for (int i=0; i<32; i++) {
+    m[i] = x[i]+1;
+    m[i].x2n();
+    y[i].x2n();
+    m[i] *= y[i];
+    m[i].Relin();
+  }
+
+  // level 1~5
+  for (int i=1; i<6; i++) {
+    int e = 0x1<<i;
+    for (int j=e; j<32; j+=e) {
+      t[j].x2n();
+      t[j+e/2].x2n();
+      t[j] *= t[j+e/2];
+      t[j].Relin();
+    }
+    e *= 2;
+    // only these values are used later
+    for (int j=e/4-1; j<32; j+=e/4)
+      m[j].ModSwitch();
+    for (int j=e/4; j<32; j+=e/2)
+      t[j].ModSwitch();
+    for (int j=e/2; j<32; j+=e/2)
+      t[j].ModSwitch();
+    level ++;
+
+    for (int j=e/4-1; j<32; j+=e/2) {
+      m[j].x2n();
+      t[j+1].x2n();
+      m[j] *= t[j+1];
+      m[j].Relin();
+    }
+    for (int j=e/2-1; j<32; j+=e/2)
+      m[j] += m[j-e/4];
+  }
+
+  // level 6
+  m[31].ModSwitch();
+  res = m[31];
+  for (int i=0; i<32; i++) {
+    m[i].reset();
+    t[i].reset();
+  }
+  level ++;
+}
+
+/********************************************
+*** Less than ( x < y ) -> z
+*** For 32 Bit integers;
+*** ti = (xi + yi)'
+*** ki = (xi)'.(yi)
+*** si = (ki).(t(i+1)).(t(i+2))...(t31)
+*** z = s0 + s1 + ... + s31
+*** x[0], y[0] : least significant bit of a, b
+*** x[31], y[31] : most significant bit of a, b
+*********************************************/
+InstBit Instruct::isLessThan(InstInt &x, InstInt &y){
+  InstBit z;
+  InstBit k[32], t[32];
+
+  int level = EqualizeLevel(x, y);
+
+  for(int i=0; i<32; i++)
+    t[i] = (x.b[i] + y.b[i]+1);
+
+    //////////////////////////////////////////
+    // Depth = 1
+  for(int i=0; i<32; i++){
+    k[i] = x.b[i]+1;
+    k[i] = C_AND(k[i], y.b[i], level);
+
+    if(i == 31)
+      Reduce(k[i],level);
+    else
+      k[i] = Process1Level(k[i], level);
+  }
+
+  for(int i=2; i<32; i+=2){
+    t[i] = C_AND(t[i], t[i+1], level);
+    t[i] = Process1Level(t[i], level);
+  }
+  //////////////////////////////////////////
+
+  level++;
+
+  for(int i=0; i<32; i++){
+    if(k[i].lvl != 1)
+      Update_ValueLevel(k[i], level);
+    if(t[i].lvl != 1)
+      Update_ValueLevel(t[i], level);
+  }
+
+    //////////////////////////////////////////
+    // Depth = 2
+  for(int i=0; i<32; i+=2){
+    k[i] = C_AND(k[i],t[i+1], level);
+    if(i == 30)
+      Reduce(k[i],level);
+    else{
+      k[i] = Process1Level(k[i], level);
+    }
+  }
+
+  for(int i=1; i<32; i+=2){
+    EqualizeLevel(k[i-1], k[i]);
+    k[i] = (k[i-1]+k[i]);
+  }
+  for(int i=4; i<32; i+=4){
+    t[i] = C_AND(t[i],t[i+2], level);
+    t[i] = Process1Level(t[i], level);
+  }
+  //////////////////////////////////////////
+
+  level++;
+  for(int i=0; i<32; i++){
+    if(k[i].lvl != 2)
+      Update_ValueLevel(k[i], level);
+    if(t[i].lvl != 2)
+      Update_ValueLevel(t[i], level);
+  }
+
+    //////////////////////////////////////////
+    // Depth = 3, #AND = 8, #Relin = 7
+  for(int i=1; i<32; i+=4){
+    k[i] = C_AND(k[i], t[i+1], level);
+    if(i == 29)
+      Reduce(k[i],level);
+    else{
+      k[i] = Process1Level(k[i], level);
+    }
+  }
+
+  for(int i=3; i<32; i+=4){
+    EqualizeLevel(k[i], k[i-2]);
+    k[i] = (k[i]+k[i-2]);
+  }
+
+  for(int i=8; i<32; i+=8){
+    t[i] = C_AND(t[i], t[i+4], level);
+    t[i] = Process1Level(t[i], level);
+  }
+  //////////////////////////////////////////
+
+  level++;
+  for(int i=0; i<32; i++){
+    if(k[i].lvl != 3)
+      Update_ValueLevel(k[i], level);
+    if(t[i].lvl != 3)
+      Update_ValueLevel(t[i], level);
+  }
+
+    //////////////////////////////////////////
+    // Depth = 4, #AND = 4, #Relin = 3
+  for(int i=3; i<32; i+=8){
+    k[i] = C_AND(k[i], t[i+1], level);
+    if(i == 27)
+      Reduce(k[i],level);
+    else{
+      k[i] = Process1Level(k[i], level);
+    }
+  }
+  for(int i=7; i<32; i+=8){
+    EqualizeLevel(k[i], k[i-4]);
+    k[i] = (k[i]+k[i-4]);
+  }
+
+  t[16] = C_AND(t[16],t[24], level);
+  t[16] = Process1Level(t[16], level);
+  //////////////////////////////////////////
+
+  level++;
+  for(int i=0; i<32; i++){
+    if(k[i].lvl != 4)
+      Update_ValueLevel(k[i], level);
+    if(t[i].lvl != 4)
+      Update_ValueLevel(t[i], level);
+  }
+
+    //////////////////////////////////////////
+    // Depth = 5, #AND = 2, #Relin = 1
+    k[7] = C_AND(k[7], t[8], level);
+    k[23] = C_AND(k[23], t[24], level);
+
+    EqualizeLevel(k[15], k[7]);
+    EqualizeLevel(k[31], k[23]);
+
+    k[15] = (k[15]+k[7]);
+    k[31] = (k[31]+k[23]);
+  //////////////////////////////////////////
+
+    k[15] = Process1Level(k[15], level);
+    level++;
+    for(int i=0; i<32; i++){
+        if(k[i].lvl != 5)
+            Update_ValueLevel(k[i], level);
+        if(t[i].lvl != 5)
+            Update_ValueLevel(t[i], level);
+    }
+
+    //////////////////////////////////////////
+    // Depth = 6, #AND = 1
+    k[15] = C_AND(k[15], t[16], level);
+  //////////////////////////////////////////
+
+  z = (k[31] + k[15]);
+  z = Process1Level(z, level);
+
+  return z;
+}
