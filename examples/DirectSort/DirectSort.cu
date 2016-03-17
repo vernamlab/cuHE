@@ -29,7 +29,7 @@ SOFTWARE.
 #include <time.h>
 
 #define detailedTiming
-//#define	check_cI
+#define	check_cI
 #define	check_cM
 #define	check_cS
 
@@ -100,20 +100,20 @@ void DirectSort::run() {
 }
 
 void DirectSort::configCircuit(int &d, int &min) {
-	switch(sortSize) {
-		case(4):
+	switch (sortSize) {
+		case (4):
 			d = 12;
 			min = 20;
 			return;
-		case(8):
+		case (8):
 			d = 13;
 			min = 20;
 			return;
-		case(16):
+		case (16):
 			d = 14;
 			min = 21;
 			return;
-		case(32):
+		case (32):
 			d = 15;
 			min = 22;
 			return;
@@ -124,13 +124,17 @@ void DirectSort::configCircuit(int &d, int &min) {
 
 void DirectSort::heSetup() {
 	multiGPUs(1);
-	cudhs = new CuDHS(circuitDepth, 2, 16, minCoeffSize, minCoeffSize, 17);
+	cudhs = new CuDHS(circuitDepth, 2, 16, minCoeffSize, minCoeffSize, 8191);
 }
 
 void DirectSort::setList() {
 	vector<int> t(sortSize, 0);
 	for (auto &i: t)
 		i = rand()%1000;
+	t[0] = 3;
+	t[1] = 1;
+	t[2] = 0;
+	t[3] = 2;
 	randList = t;
 }
 
@@ -177,35 +181,61 @@ void DirectSort::directSort() {
 #ifdef check_cI
   cudaDeviceSynchronize();
   cout<<"cI:"<<endl;
+  ZZX ti;
+  ZZ number;
   for (int i=0; i<sortSize; i++) {
+  	number = to_ZZ(0);
     for(int j=0; j<32; j++) {
       cI[0][i][j].x2z();
-      list[i][j] = cI[0][i][j].zRep();
-		}
-	}
-	decList();
-	printList(sortedList);
-  for (int i=0; i<sortSize; i++) {
-    for(int j=0; j<32; j++) {
+      cudhs->decrypt(ti, cI[0][i][j].zRep(), level);
+      number += coeff(ti, 0)<<j;
       cI[0][i][j].x2c();
-    }
-  }
+		}
+		cout<<number<<" ";
+	}
+	cout<<endl;
 #endif
 
+  ZZX cmpZZX;
+  CuCtxt cmp;
+  for (int i=0; i<sortSize; i++) {
+	  isLess(cmp, cI[0][0], cI[0][i]);
+		cmp.x2z();
+		cudhs->decrypt(cmpZZX, cmp.zRep(), level+6);
+		cout<<coeff(cmpZZX, 0)<<endl;
+	}
   constructMatrix();
 #ifdef check_cM
   cudaDeviceSynchronize();
   cout<<"cM:"<<endl;
-  ZZX temp;
+  ZZX tm;
   for (int i=0; i<sortSize; i++) {
     for(int j=0; j<sortSize; j++) {
       cM[0][i][j].x2z();
-      cudhs->decrypt(temp, cM[0][i][j].zRep(), level);
-      cout<<coeff(temp, 0);
+      cudhs->decrypt(tm, cM[0][i][j].zRep(), level);
+      cout<<coeff(tm, 0);
       cM[0][i][j].x2c();
     }
     cout<<endl;
   }
+#endif
+
+	hammingWeights();
+#ifdef check_cS
+	cudaDeviceSynchronize();
+	cout<<"cS:"<<endl;
+	ZZ idx;
+	ZZX ts;
+	for (int i=0; i<sortSize; i++) {
+	  idx = to_ZZ(0);
+	  for(int j=0; j<8; j++) {
+	    cS[0][i][j].x2z();
+	    cudhs->decrypt(ts, cS[0][i][j].zRep(), level);
+	    idx += coeff(ts, 0)<<j;
+	    cS[0][i][j].x2c();
+	  }
+	  cout<<idx<<endl;
+	}
 #endif
 }
 
@@ -253,11 +283,10 @@ void DirectSort::prepareInput() {
     #pragma omp barrier
     for (int k=0; k<sortSize*32; k++) {
       int i = k/32, j = k%32;
-      if (k%nGPUs == nowDev) {
+      if (k%nGPUs == nowDev)
         for (int dev=0; dev<nGPUs; dev++)
           if (dev != nowDev)
           	copyTo(cI[dev][i][j], cI[nowDev][i][j], dev);
-      }
     }
   }
 #ifdef detailedTiming
@@ -312,7 +341,7 @@ void DirectSort::constructMatrix() {
   ot.show("Matrix");
 #endif
 }
-// TODO:remove
+
 void DirectSort::isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b) {
   CuCtxt y;
   CuCtxt m[32], t[32];
@@ -357,12 +386,107 @@ void DirectSort::isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b) {
     }
   }
   // lvl 6
-  // TODO: wrong
   m[31].modSwitch();
   copy(res, m[31]);
 }
 
+void DirectSort::hammingWeights() {
+#ifdef detailedTiming
+  otimer ot;
+  ot.start();
+#endif
+  int tempLevel = level;
+  int sortSizeIter = sortSize/4;
+  while (sortSizeIter > 0) {
+    tempLevel ++;
+    sortSizeIter /= 2;
+  }
+  int nGPUs = numGPUs();
+	#pragma omp parallel num_threads(nGPUs)
+  {
+    int nowDev = omp_get_thread_num();
+    for (int i=0; i<sortSize; i++) {
+    	cout<<"calHW: "<<i<<endl;
+      if (i%nGPUs == nowDev)
+        calHW(cS[nowDev][i], cM[nowDev][i]);
+      else
+        for (int j=0; j<8; j++)
+          cS[nowDev][i][j].setLevel(tempLevel, 2, nowDev);
+    }
+    #pragma omp barrier
+    for (int i=0; i<sortSize; i++)
+      for (int dev=0; dev<nGPUs; dev++)
+        if (i%nGPUs == nowDev)
+          if (dev != nowDev)
+            for (int j=0; j<8; j++)
+            	copyTo(cS[dev][i][j], cS[nowDev][i][j], dev);
+  }
+  level = tempLevel;
+#ifdef detailedTiming
+  ot.stop();
+  ot.show("HWs");
+#endif
+}
 
+void DirectSort::calHW(CuCtxt *s, CuCtxt *m) {
+	switch (sortSize) {
+		case 4:
+			calHW4(s, m);
+			return;
+		case 8:
+			calHW8(s, m);
+			return;
+		case 16:
+			calHW16(s, m);
+			return;
+		case 32:
+			calHW32(s, m);
+			return;
+// TODO: case 64 not tested yet
+//		case 64:
+//			calHW64(s, m);
+//			return;
+	}
+  cout<<"Error: wrong HammingWeight sortSize"<<endl;
+  terminate();
+}
 
+void DirectSort::calHW4(CuCtxt *s, CuCtxt *m) {
+  int lvl = level;
+  for (int i=0; i<4; i++)
+    m[i].x2c();
+  CuCtxt s1;
+  cXor(s1, m[0], m[1]);
+  cXor(s1, s1, m[2]);
+  cXor(s[0], s1, m[3]);
+  // Depth 1
+  for (int i=0; i<4; i++)
+    m[i].x2n();
+  CuCtxt temp;
+  CuCtxt c1;
+  cAnd(c1, m[0], m[1]);
+  cAnd(temp, m[0], m[2]);
+  cXor(c1, c1, temp);
+  cAnd(temp, m[1], m[2]);
+  cXor(c1, c1, temp);
+  s1.x2n();
+  CuCtxt c2;
+  cAnd(c2, s1, m[3]);
+  cXor(s[1], c1, c2);
+  // Finalize
+  s[1].relin();
+  s[1].modSwitch();
+  lvl ++;
+  s[0].modSwitch(lvl);
+  for (int i=2; i<8; i++)
+    s[i].setLevel(s[0].level(), s[0].domain(), s[0].device());
+}
 
-
+void DirectSort::calHW8(CuCtxt *s, CuCtxt *m) {
+}
+void DirectSort::calHW16(CuCtxt *s, CuCtxt *m) {
+}
+void DirectSort::calHW32(CuCtxt *s, CuCtxt *m) {
+}
+void DirectSort::calHW64(CuCtxt *s, CuCtxt *m) {
+}

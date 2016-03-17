@@ -564,6 +564,7 @@ void CuCtxt::modSwitch(int lvl, cudaStream_t st) {
 	while (lvl > level_) {
 		crtModSwitch(cRep_, cRep_, logq_, device_, st);
 		logq_ -= param.logCoeffCut;
+		level_ ++;
 	}
 	CSC(cudaStreamSynchronize(st));
 }

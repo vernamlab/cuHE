@@ -78,16 +78,16 @@ private:
 	void preAllocation();
 	void prepareInput();
 	void constructMatrix();
+	// return enc(0) if a < b
 	void isLess(CuCtxt &res, CuCtxt *a, CuCtxt *b);
-
-/*	void hammingWeights();
-	void prepareOutput();
-	void isEqual(CuCtxt &res, CuCtxt *a, CuCtxt *b);
+	void hammingWeights();
 	void calHW(CuCtxt *s, CuCtxt *m);
 	void calHW4(CuCtxt *s, CuCtxt *m);
 	void calHW8(CuCtxt *s, CuCtxt *m);
 	void calHW16(CuCtxt *s, CuCtxt *m);
 	void calHW32(CuCtxt *s, CuCtxt *m);
 	void calHW64(CuCtxt *s, CuCtxt *m);
-*/
+
+//	void prepareOutput();
+//	void isEqual(CuCtxt &res, CuCtxt *a, CuCtxt *b);
 };

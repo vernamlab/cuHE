@@ -151,36 +151,36 @@ __inline__ __device__
 uint64 _ls_modP(uint64 x, int l) {
 	register uint64 tx = x;
 	register uint32 buff[7];
-	switch(l) {
+	switch (l) {
 		// 2 words
-		case (0):
+		case 0:
 			buff[0] = (uint32)tx;
 			buff[1] = (uint32)(tx>>32);
 			break;
 		// 3 words
-		case (3):
-		case (6):
-		case (9):
-		case (12):
-		case (15):
-		case (18):
-		case (21):
-		case (24):
-		case (27):
-		case (30):
+		case 3:
+		case 6:
+		case 9:
+		case 12:
+		case 15:
+		case 18:
+		case 21:
+		case 24:
+		case 27:
+		case 30:
 			buff[2] = (uint32)(tx>>(64-l));
 			buff[1] = (uint32)(tx>>(32-l));
 			buff[0] = (uint32)(tx<<l);
 			_uint96_modP(buff);
 			break;
 		// 4 words
-		case (36):
-		case (42):
-		case (45):
-		case (48):
-		case (54):
-		case (60):
-		case (63):
+		case 36:
+		case 42:
+		case 45:
+		case 48:
+		case 54:
+		case 60:
+		case 63:
 			buff[3] = (uint32)(tx>>(96-l));
 			buff[2] = (uint32)(tx>>(64-l));
 			buff[1] = (uint32)(tx<<(l-32));
@@ -188,10 +188,10 @@ uint64 _ls_modP(uint64 x, int l) {
 			_uint128_modP(buff);
 			break;
 		// 5 words
-		case (72):
-		case (75):
-		case (84):
-		case (90):
+		case 72:
+		case 75:
+		case 84:
+		case 90:
 			buff[4] = (uint32)(tx>>(128-l));
 			buff[3] = (uint32)(tx>>(96-l));
 			buff[2] = (uint32)(tx<<(l-64));
@@ -200,9 +200,9 @@ uint64 _ls_modP(uint64 x, int l) {
 			_uint160_modP(buff);
 			break;
 		// 6 words
-		case (105):
-		case (108):
-		case (126):
+		case 105:
+		case 108:
+		case 126:
 			buff[5] = (uint32)(tx>>(160-l));
 			buff[4] = (uint32)(tx>>(128-l));
 			buff[3] = (uint32)(tx<<(l-96));
@@ -212,7 +212,7 @@ uint64 _ls_modP(uint64 x, int l) {
 			_uint192_modP(buff);
 			break;
 		// 7 words
-		case (147):
+		case 147:
 			buff[6] = (uint32)(tx>>(192-l));
 			buff[5] = (uint32)(tx>>(160-l));
 			buff[4] = (uint32)(tx<<(l-128));
