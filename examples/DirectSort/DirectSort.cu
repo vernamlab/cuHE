@@ -29,7 +29,7 @@ SOFTWARE.
 #include <time.h>
 
 #define detailedTiming
-#define	check_cI
+//#define	check_cI
 #define	check_cM
 #define	check_cS
 
@@ -205,7 +205,7 @@ void DirectSort::directSort() {
 		cudhs->decrypt(cmpZZX, cmp.zRep(), level+6);
 		cout<<coeff(cmpZZX, 0)<<endl;
 	}
-/*  constructMatrix();
+  constructMatrix();
 #ifdef check_cM
   cudaDeviceSynchronize();
   cout<<"cM:"<<endl;
@@ -220,7 +220,7 @@ void DirectSort::directSort() {
     cout<<endl;
   }
 #endif
-
+/*
 	hammingWeights();
 #ifdef check_cS
 	cudaDeviceSynchronize();
