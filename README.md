@@ -36,8 +36,19 @@ Compile
 options to cmake command defaults are:
 
 	-DGPU_ARCH:STRING=50
-	-DGCC_CUDA_VERSION:STRING=4.9
+	-DGCC_CUDA_VERSION:STRING=gcc-4.9
 
+Notes for Mac OS X
+------------------
+On Mac you must use clang instead of gcc. You need to install a version compatible with OpenMP. With brew you can
+
+	brew install clang-omp
+
+Then you must tell Cmake and Cuda that you are using clang-omp
+
+	cd cuhe
+	CC=clang-omp CXX=clang-omp++ cmake -DGCC_CUDA_VERSION=clang-omp ./
+	make
 
 A Short Tutorial
 ----------------
