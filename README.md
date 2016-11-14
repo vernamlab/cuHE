@@ -88,7 +88,7 @@ We want to acknowledge [Andrea Peruffo][18] for improving and debugging the code
 [3]: http://eprint.iacr.org/2015/818/ "cuHEePrint"
 [4]: http://eprint.iacr.org/2014/389/ "Dai2014ePrint"
 [5]: http://eprint.iacr.org/2015/462/ "Dai2015ePrint"
-[6]: http://en.wikipedia.org/wiki/Homomorphic_encryption/ "HE"
+[6]: http://en.wikipedia.org/wiki/Homomorphic_encryption "HE"
 [7]: http://developer.nvidia.com/cuda-gpus/ "CUDAGPUs"
 [8]: http://www.shoup.net/ntl/ "NTL"
 [9]: http://openmp.org/wp/ "OpenMP"
