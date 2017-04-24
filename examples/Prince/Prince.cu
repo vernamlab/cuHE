@@ -294,28 +294,12 @@ void Prince::_sbox(ZZX in[4], int dev, int lvl) {
 		out[i].relin();
 		out[i].modSwitch();
 	}
-	// delete
-	a.~CuCtxt();
-	b.~CuCtxt();
-	c.~CuCtxt();
-	d.~CuCtxt();
-	ab.~CuCtxt();
-	ac.~CuCtxt();
-	ad.~CuCtxt();
-	bc.~CuCtxt();
-	bd.~CuCtxt();
-	cd.~CuCtxt();
-	abd.~CuCtxt();
-	acd.~CuCtxt();
-	bcd.~CuCtxt();
-	abc.~CuCtxt();
 	///////////////////////////////////
 	// level up
 	// output
 	for (int i=0; i<4; i++) {
 		out[i].x2z();
 		in[i] = out[i].zRep();
-		out[i].~CuCtxt();
 	}
 	return;
 
@@ -433,27 +417,12 @@ void Prince::_inv_sbox(ZZX in[4], int dev, int lvl) {
 		out[i].modSwitch();
 	}
 	// delete
-	a.~CuCtxt();
-	b.~CuCtxt();
-	c.~CuCtxt();
-	d.~CuCtxt();
-	ab.~CuCtxt();
-	ac.~CuCtxt();
-	ad.~CuCtxt();
-	bc.~CuCtxt();
-	bd.~CuCtxt();
-	cd.~CuCtxt();
-	abd.~CuCtxt();
-	acd.~CuCtxt();
-	bcd.~CuCtxt();
-	abc.~CuCtxt();
 	///////////////////////////////////
 	// level up
 	// output
 	for (int i=0; i<4; i++) {
 		out[i].x2z();
 		in[i] = out[i].zRep();
-		out[i].~CuCtxt();
 	}
 };
 
