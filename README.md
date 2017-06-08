@@ -59,7 +59,7 @@ void setParameters(int d, int p, int w, int min, int cut, int m);//in "CuHE.h", 
 void initCuHE(ZZ *coeffMod_, ZZX modulus); //in "CuHE.h", start pre-computation on GPUs
 ```
 
-Then we may process some pre-computation of the circuit. When it is time to run the circuit, we suggest to turn on our virtual allocator. Do not turn if off until the circuit is completely done.
+Then we may process some pre-computation of the circuit. When it is time to run the circuit, we suggest to turn on our virtual allocator. Do not turn it off until the circuit is completely done.
 ```c++
 void startAllocator(); //in "CuHE.h", start virtual allocator
 void stopAllocator(); //in "CuHE.h", stop virtual allocator
